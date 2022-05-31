@@ -201,7 +201,7 @@ if __name__ == '__main__':
     #print(seg_intersect(p11,p12,p21,p22))
 
     # hz = np.zeros((2, 1))
-    while time <= 0.0:
+    while time <= SIM_TIME:
         time += DT
         j = 0
 
