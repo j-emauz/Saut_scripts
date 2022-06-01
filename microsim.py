@@ -177,6 +177,55 @@ def laser_model(x_true, tl):
     # laser_scan = laser_scan + (r_error*math.cos(tl), r_error*math.sin(tl))
     return laser_scan, r, r_error
 
+"""
+Codigo para parte de extract lines 
+
+
+#funcoes para extract lines com dados do lazer
+def pol2cart(theta, rho):
+    x = rho * np.cos(theta)
+    y = rho * np.sin(theta)
+    return(x, y)
+
+def splitlines(xy, startidx, endidx, thersholds)
+    return(alpha, r, idx)
+
+def mergecolinear(xy, alpha, r, pointsidx, thersholds):
+    return(alphaout, rout, pointsidxout)
+
+#substituir theta e rho pelos dados do lazer
+def extractlines(theta, rho, thersholds):
+    #passa de coordenadas polares para cartesianas
+    xy = np.zeros((1,0))
+    xy = pol2cart(theta, rho)
+
+    #faz a extracao das linhas
+    alpha, r, pointsidx = splitlines(xy, 0, len(XY, 1), thersholds)
+
+    #numero de segmentos de reta, caso seja mais do que um segmento, vereifica se sao colineares
+    n= len(r)
+    if n>1:
+        alpha, r, pointidx = mergecolinear(xy, alpha, r, pointsidx, thersholds)
+        n= len(r)
+        #atualiza o numero de segmentos
+
+    #definir coordenads dos endpoints e len dos segmentos
+    segmends = np.zeros(n-1, 3)
+    segmlen = np.zeros(n-1, 0)
+
+    for l in range(0, n-1):
+        segmends[l, :] =
+        segmlen[l] = math.sqrt((segmends((l,0)) - segmends((l,2)))**2 + (segmends((l,1)) - segmends((l,3)))**2)
+
+    #remover segmentos demasiados pequenos ???
+
+    #definiçao de z, R
+    z = np.zeros((len(alpha)-1, len(r)-1))
+    z = ([[alpha],[r]])
+    
+    return z, r, segmends
+    
+"""
 
 if __name__ == '__main__':
     v = 0.1
