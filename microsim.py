@@ -16,25 +16,30 @@ x2 = -3 + 0 * y3
 x3 = 3 + 0 * y3
 """
 # linha de baixo
-p11 = np.array([-3, -3])
-p12 = np.array([3, -3])
-X1 = [p11[0], p12[0]]
-Y1 = [p11[1], p12[1]]
+P11 = np.array([-3, -3])
+P12 = np.array([3, -3])
+X1 = [P11[0], P12[0]]
+Y1 = [P11[1], P12[1]]
 # linha de cima
-p21 = np.array([-3, 3])
-p22 = np.array([3, 3])
-X2 = [p21[0], p22[0]]
-Y2 = [p21[1], p22[1]]
+P21 = np.array([-3, 3])
+P22 = np.array([3, 3])
+X2 = [P21[0], P22[0]]
+Y2 = [P21[1], P22[1]]
 # linha da esquerda
-p31 = np.array([-3, -3])
-p32 = np.array([-3, 3])
-X3 = [p31[0], p32[0]]
-Y3 = [p31[1], p32[1]]
+P31 = np.array([-3, -3])
+P32 = np.array([-3, 3])
+X3 = [P31[0], P32[0]]
+Y3 = [P31[1], P32[1]]
 # linha da direita
-p41 = np.array([3, -3])
-p42 = np.array([3, 3])
-X4 = [p41[0], p42[0]]
-Y4 = [p41[1], p42[1]]
+P41 = np.array([3, -3])
+P42 = np.array([3, 3])
+X4 = [P41[0], P42[0]]
+Y4 = [P41[1], P42[1]]
+#linha la po meio
+P51 = np.array([1,-2.5])
+P52 = np.array([2.5,0])
+X5 = [P51[0], P52[0]]
+Y5 = [P51[1], P52[1]]
 
 INPUT_NOISE = np.diag([0.01, np.deg2rad(0.5)])  # ** 2
 SIM_TIME = 64
@@ -52,7 +57,7 @@ def plot_map():
     plt.plot(X2, Y2, '-k')
     plt.plot(X3, Y3, '-k')
     plt.plot(X4, Y4, '-k')
-    plt.title('Monkey')
+    plt.plot(X5, Y5, '-k')
     #plt.show()
 
 
@@ -146,18 +151,24 @@ def laser_model(x_true, tl):
     pl2 = np.array([x2, y2])
     r_error = 0.1**2 * np.random.randn(1)
 
-    if intersect(p11, p12, pl1, pl2):
-        laser_scan = get_intersect(p11, p12, pl1, pl2) 
+    if intersect(P51, P52, pl1, pl2):
+        laser_scan = get_intersect(P51, P52, pl1, pl2) 
         r = np.linalg.norm(pl1-laser_scan)
-    elif intersect(p21, p22, pl1, pl2):
-        laser_scan = get_intersect(p21, p22, pl1, pl2) 
+    elif intersect(P11, P12, pl1, pl2):
+        laser_scan = get_intersect(P11, P12, pl1, pl2) 
         r = np.linalg.norm(pl1-laser_scan)
-    elif intersect(p31, p32, pl1, pl2):
-        laser_scan = get_intersect(p31, p32, pl1, pl2) 
+    elif intersect(P21, P22, pl1, pl2):
+        laser_scan = get_intersect(P21, P22, pl1, pl2) 
         r = np.linalg.norm(pl1-laser_scan)
-    elif intersect(p41, p42, pl1, pl2):
-        laser_scan = get_intersect(p41, p42, pl1, pl2) 
+    elif intersect(P31, P32, pl1, pl2):
+        laser_scan = get_intersect(P31, P32, pl1, pl2) 
         r = np.linalg.norm(pl1-laser_scan)
+    elif intersect(P41, P42, pl1, pl2):
+        laser_scan = get_intersect(P41, P42, pl1, pl2) 
+        r = np.linalg.norm(pl1-laser_scan)
+   # elif intersect(P51, P52, pl1, pl2):
+    #    laser_scan = get_intersect(P51, P52, pl1, pl2) 
+     #   r = np.linalg.norm(pl1-laser_scan)
     else:
         laser_scan = float('inf'), float('inf')
         r = float('inf')
@@ -198,7 +209,7 @@ if __name__ == '__main__':
     scan_m = np.zeros((2, i))
 
     
-    #print(seg_intersect(p11,p12,p21,p22))
+    #print(seg_intersect(P11,P12,P21,P22))
 
     # hz = np.zeros((2, 1))
     while time <= SIM_TIME:
@@ -221,7 +232,7 @@ if __name__ == '__main__':
         # for stopping simulation with the esc key.
         plt.gcf().canvas.mpl_connect('key_release_event',
                                      lambda event: [exit(0) if event.key == 'escape' else None])
-        # plot_map()
+        plot_map()
 
         plt.plot(xTrue_plot[0, :].flatten(),
                  xTrue_plot[1, :].flatten(), "-b")
@@ -249,7 +260,8 @@ if __name__ == '__main__':
     
         #plot_covariance_ellipse(xEst, EEst)
         
-        plt.axis("equal")
+        # plt.axis("equal")
+        plt.axis([-3.5, 3.5, -3.5, 3.5])
         plt.grid(True)
         plt.pause(0.001)
 
