@@ -7,7 +7,20 @@ import matplotlib.pyplot as plt
 import numpy as np
 import cv2 as cv
 
+
+class Thresholds:
+    def __init__(self):
+        self.seg_min_length = 0.01
+        self.point_dist = 0.005
+        self.min_point_seg = 20
+
+
+
+
 def fitline(pontos):
+    # centroid de pontos considerando que o centroid de 
+    # um numero finito de pontos pode ser obtido como 
+    # a media de cada coordenada
 
     lixo, len = pontos.shape
     
@@ -31,11 +44,70 @@ def fitline(pontos):
     return alpha, r
 
 
+def compdistpointstoline(xy, alpha, r):
+    xcosa = xy[1, :] * math.cos(alpha)
+    ysina = xy[2, :] * math.sin(alpha)
+    d = xcosa + ysina - r
+    return d
+
+
+def findsplitposid(d, thresholds):
+    # implementaçao simples
+    N = len(d)
+
+    d = abs(d)
+    mask = d > thresholds.point_dist
+    if not np.any(mask):
+        splitpos = -1
+        return splitpos
+    
+    splitpos = np.argmax(d)
+    if (splitpos == 0):
+        splitpos = 1
+        return splitpos
+    if(splitpos == (N-1)):
+        splitpos = N-2
+        return splitpos
+
+
+
+
+def findsplitpos(xy, alpha, r, thresholds):
+    d  = compdistpointstoline(xy, alpha, r)
+    splitpos = findsplitposid(d, thresholds)
+    return splitpos
+
+
+def splitlines(xy, startidx, endidx, thresholds):
+    N = endidx - startidx + 1
+
+    alpha, r = fitline(xy[:, startidx:(endidx + 1)])
+
+    if N <= 2:
+        idx = [startidx, endidx]
+        return alpha, r, idx
+
+    splitpos = findsplitpos(xy[:, startidx:(endidx + 1)], alpha, r, thresholds)
+    if (splitpos != -1):
+        alpha1, r1, idx1 = splitlines(xy, startidx, splitpos+startidx-1, thresholds) # se calhar start idx-1
+        alpha2, r2, idx2 = splitlines(xy, splitpos+startidx-1, endidx, thresholds)
+        alpha = np.matrix([[alpha1],[alpha2]])
+        r = np.matrix([[r1],[r2]])
+        idx = np.matrix([[idx1],[idx2]])
+    else:
+        idx = [startidx, endidx]
+
+    return alpha, r, idx
+    
+
+
 
 if __name__ == '__main__':
     pontos = np.matrix([[1, 2], [4, 3]])
     
     lixo, len = fitline(pontos)
+    thresholds = Thresholds
+    print(Thresholds)
 
     print(lixo)
     print(len)
