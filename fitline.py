@@ -91,9 +91,9 @@ def splitlines(xy, startidx, endidx, thresholds):
     if (splitpos != -1):
         alpha1, r1, idx1 = splitlines(xy, startidx, splitpos+startidx-1, thresholds) # se calhar start idx-1
         alpha2, r2, idx2 = splitlines(xy, splitpos+startidx-1, endidx, thresholds)
-        alpha = np.matrix([[alpha1],[alpha2]])
-        r = np.matrix([[r1],[r2]])
-        idx = np.matrix([[idx1],[idx2]])
+        alpha = np.concatenate(alpha1, alpha2)
+        r = np.concatenate(r1, r2)
+        idx = np.concatenate(idx1, idx2)
     else:
         idx = [startidx, endidx]
 
@@ -103,11 +103,10 @@ def splitlines(xy, startidx, endidx, thresholds):
 
 
 if __name__ == '__main__':
-    pontos = np.matrix([[1, 2], [4, 3]])
+    pontos = np.matrix([[1, 2, 2, 3, 5, 4], [4, 3, 2, 4 ,2, 5]])
     
-    lixo, len = fitline(pontos)
-    thresholds = Thresholds
-    print(Thresholds)
+    alpha, r = fitline(pontos)
+    thresholds = Thresholds()
 
-    print(lixo)
-    print(len)
+    print(alpha)
+    print(r)
