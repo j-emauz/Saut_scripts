@@ -11,7 +11,7 @@ import cv2 as cv
 class Thresholds:
     def __init__(self):
         self.seg_min_length = 0.01
-        self.point_dist = 0.005
+        self.point_dist = 0.05
         self.min_point_seg = 20
 
 
@@ -32,7 +32,7 @@ def fitline(pontos):
     denom = np.matrix.sum(np.multiply(dy, dy) - np.multiply(dx, dx))
     alpha = math.atan2(num, denom) / 2
 
-    r = xc * math.cos(alpha) * yc * math.sin(alpha)
+    r = xc * math.cos(alpha) + yc * math.sin(alpha)
 
     if r < 0:
         alpha = alpha + math.pi
@@ -53,28 +53,27 @@ def compdistpointstoline(xy, alpha, r):
 
 def findsplitposid(d, thresholds):
     # implementaçao simples
-    print('d = ', end = '')
-    print(d)
+    # print('d = ', end = '')
+    # print(d)
     N = d.shape[1]
-    print('N =', end='')
-    print(N)
+    # print('N =', end='')
+    # print(N)
 
     d = abs(d)
+    # print(d)
     mask = d > thresholds.point_dist
-    print('mask =', end='')
-    print(mask)
+    # print('mask =', end='')
+    # print(mask)
     if not np.any(mask):
         splitpos = -1
         return splitpos
     
     splitpos = np.argmax(d)
-    print(splitpos)
+    # print(splitpos)
     if (splitpos == 0):
         splitpos = 1
-        return splitpos
     if(splitpos == (N-1)):
         splitpos = N-2
-        return splitpos
     return splitpos
 
 
@@ -96,12 +95,13 @@ def splitlines(xy, startidx, endidx, thresholds):
         return alpha, r, idx
 
     splitpos = findsplitpos(xy[:, startidx:(endidx + 1)], alpha, r, thresholds)
+    #print(splitpos)
     if (splitpos != -1):
-        alpha1, r1, idx1 = splitlines(xy, startidx, splitpos+startidx-1, thresholds) # se calhar start idx-1
-        alpha2, r2, idx2 = splitlines(xy, splitpos+startidx-1, endidx, thresholds)
-        alpha = np.concatenate(alpha1, alpha2)
-        r = np.concatenate(r1, r2)
-        idx = np.concatenate(idx1, idx2)
+        alpha1, r1, idx1 = splitlines(xy, startidx, splitpos+startidx, thresholds) # se calhar start idx-1
+        alpha2, r2, idx2 = splitlines(xy, splitpos+startidx, endidx, thresholds)
+        alpha = np.hstack((alpha1, alpha2))
+        r = np.hstack((r1, r2))
+        idx = np.hstack((idx1, idx2))
     else:
         idx = [startidx, endidx]
 
@@ -116,9 +116,16 @@ if __name__ == '__main__':
     alpha, r = fitline(pontos)
     thresholds = Thresholds()
 
-    splipos = findsplitpos(pontos, alpha, r, thresholds)
+    alphav, rv, idxv = splitlines(pontos, 0, 4, thresholds)
+    startidx=0
+    endidx=4
 
-
+    # splitpos = findsplitpos(pontos[:, startidx:(endidx + 1)], alpha, r, thresholds)
+    print(alphav)
+    print(rv)
+    print(idxv)
+    # print(splitpos)
     print(alpha)
     print(r)
-    print(splipos)
+    
+  
