@@ -57,9 +57,9 @@ def fitLinePolar(theta, rho, C_TR): #usectr = 0):
     y=rhoSquare @ np.transpose(sn2) -2/N @ rho @ np.transpose(cs) @ rho @ np.transpose(sn)
     x=rhoSquare @ np.transpose(cs2) - csIJ /N
 
-    alpha = 0.5 * (math.atan2(y,x)+math.pi)
+    alpha = 0.5 * (math.atan2(y, x)+math.pi)
 
-    num2term=np.multiply(math.cos(theta-np.ones((len(theta),), dtype=float)),alpha)
+    num2term=np.multiply(math.cos(theta-np.ones((len(theta),), dtype=float)), alpha)
     numR=np.multiply(rho, np.transpose(num2term))
     r= rho @ np.transpose(math.cos(theta - np.ones((len(theta),), dtype=float) @ alpha)) / N
 
@@ -81,7 +81,7 @@ def fitLinePolar(theta, rho, C_TR): #usectr = 0):
 
     grad_rhoR = (math.cos(theta - np.ones((len(theta),), dtype=float) * alphaOrg)+rho @ np.transpose(math.sin(theta - np.ones((theta.shape[0], theta.shape[1]), dtype=float) @ alphaOrg)) @ gradAlpha[1, N:(2*N-1)])/N
     term1=-math.sin(theta - np.ones((theta.shape[0], theta.shape[1]), dtype=float) @ alphaOrg)
-    term2= np.multiply(rho, term1) @ (np.identity(N) - np.transpose(np.ones((theta.shape[0], theta.shape[1]), dtype=float)) @ gradAlpha[1, 1:N])
+    term2= np.multiply(rho, term1) @ (np.identity(N) - np.transpose(np.ones((theta.shape[0], theta.shape[1]), dtype=float)) @ gradAlpha[0, 1:N-1])
     grad_thetaR = term2 / N
 
     gradR = [[grad_thetaR], [grad_rhoR]]
