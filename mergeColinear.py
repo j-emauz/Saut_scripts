@@ -1,3 +1,5 @@
+import numpy as np
+
 from fitline import fitline
 from findSplitPos import findSplitPos
 
@@ -9,9 +11,10 @@ def mergeColinear(xy, alpha, r, pointidx, thresholds):
     N = r.shape[0]
     zt = [0, 0]
 
-    rOut = [0, 0]
-    alphaOut = [0, 0]
-    pointidxOut = [0, 0]
+    rOut = np.zeros((len(r)),1)
+    alphaOut = np.zeros((len(alpha)), 1)
+    pointidxOut = np.zeros((len(alpha)), 1)
+
     j = 0
 
     for i in range(2, N):
