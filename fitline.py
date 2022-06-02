@@ -45,29 +45,37 @@ def fitline(pontos):
 
 
 def compdistpointstoline(xy, alpha, r):
-    xcosa = xy[1, :] * math.cos(alpha)
-    ysina = xy[2, :] * math.sin(alpha)
+    xcosa = xy[0, :] * math.cos(alpha)
+    ysina = xy[1, :] * math.sin(alpha)
     d = xcosa + ysina - r
     return d
 
 
 def findsplitposid(d, thresholds):
     # implementaçao simples
-    N = len(d)
+    print('d = ', end = '')
+    print(d)
+    N = d.shape[1]
+    print('N =', end='')
+    print(N)
 
     d = abs(d)
     mask = d > thresholds.point_dist
+    print('mask =', end='')
+    print(mask)
     if not np.any(mask):
         splitpos = -1
         return splitpos
     
     splitpos = np.argmax(d)
+    print(splitpos)
     if (splitpos == 0):
         splitpos = 1
         return splitpos
     if(splitpos == (N-1)):
         splitpos = N-2
         return splitpos
+    return splitpos
 
 
 
@@ -103,10 +111,14 @@ def splitlines(xy, startidx, endidx, thresholds):
 
 
 if __name__ == '__main__':
-    pontos = np.matrix([[1, 2, 2, 3, 5, 4], [4, 3, 2, 4 ,2, 5]])
+    pontos = np.matrix([[1, 2, 3, 3, 3], [1, 1, 1, 2, 3]])
     
     alpha, r = fitline(pontos)
     thresholds = Thresholds()
 
+    splipos = findsplitpos(pontos, alpha, r, thresholds)
+
+
     print(alpha)
     print(r)
+    print(splipos)
