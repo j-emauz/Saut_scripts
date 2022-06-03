@@ -55,6 +55,9 @@ def extractlines(theta, rho, c_tr, thersholds):
     r = r(goodsegmidx)
     segmends = segmends[goodsegmidx, :]
     segmlen = segmlen(goodsegmidx)
+    return alpha, r, segmends, segmlen, pointsidx
+
+""""
 
 
     # definiçao de z, R
@@ -75,3 +78,4 @@ def extractlines(theta, rho, c_tr, thersholds):
             R_seg = fitLinePolar(theta(aux_range - 1), rho(aux_range - 1), c_trmat)[2]
 
     return z, R_seg, segmends
+""""
