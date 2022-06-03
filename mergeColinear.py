@@ -27,8 +27,8 @@ def fitline(pontos):
     dx = (pontos[0, :] - xc)
     dy = (pontos[1, :] - yc)
 
-    num = -2 * np.matrix.sum(np.multiply(dx, dy))
-    denom = np.matrix.sum(np.multiply(dy, dy) - np.multiply(dx, dx))
+    num = -2 * np.sum(np.multiply(dx, dy))
+    denom = np.sum(np.multiply(dy, dy) - np.multiply(dx, dx))
     alpha = math.atan2(num, denom) / 2
 
     r = xc * math.cos(alpha) + yc * math.sin(alpha)
@@ -163,7 +163,8 @@ def mergeColinear(xy, alpha, r, pointidx, thresholds):
 
 
 if __name__ == '__main__':
-    pontos = np.matrix([[1, 1, 1, 1, 1], [-0.83909963, -0.36397023, 0.0, 0.36397023, 0.83909963]])
+    pontos = np.array([[1, 1, 1, 1, 1], [-0.83909963, -0.36397023, 0.0, 0.36397023, 0.83909963]])
+    print(pontos)
 
 
     alpha, r = fitline(pontos)
