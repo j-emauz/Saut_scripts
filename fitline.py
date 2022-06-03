@@ -180,7 +180,7 @@ def pol2cart(theta, rho):
 
 
 def extractlines(theta, rho, thersholds):
-    # passa de coordenadas polares para cartesianas
+    #passa de coordenadas polares para cartesianas
 
     x,y = pol2cart(theta, rho)
 
