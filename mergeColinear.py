@@ -20,6 +20,7 @@ def mergeColinear(xy, alpha, r, pointidx, thresholds):
     for i in range(1, N-1):
         endidx = pointidx(i,1)
 
+        #Fitline retorna alpha e r
         zt[0], zt[1] = fitline(xy[:, startidx:endidx])
 
         splitpos = findSplitPos(xy[:, startidx:endidx], zt[0], zt[1], thresholds)
