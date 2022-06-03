@@ -25,9 +25,9 @@ def mergeColinear(xy, alpha, r, pointidx, thresholds):
         splitpos = findSplitPos(xy[:, startidx:endidx], zt[1], zt[2], thresholds)
 
         #Se nao for necessario fazer split, fazemos merge
-        if splitpos == -1
+        if splitpos == -1:
             z = zt
-        elif #Sem mais merges
+        else: #Sem mais merges
             alphaOut[j, 0] = z[0]
             rOut[j, 0] = z[2]
             pointidxOut[j, :] = [startidx, lastendidx]
@@ -41,6 +41,17 @@ def mergeColinear(xy, alpha, r, pointidx, thresholds):
     pointidxOut[j, :] = [startidx, lastendidx]
 
     return alphaOut, rOut, pointidxOut
+
+
+def main():
+    xy = [[1, 2, 3, 4, 1, 2, 3, 4, 1, 1, 1, 1],
+         [0, 0, 0, 0, 1, 1, 1, 1, 1, 2, 3, 4]]
+
+    alpha, r = fitline(xy)
+
+
+if __name__ == '__main__':
+    main()
 
 
 
