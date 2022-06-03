@@ -40,7 +40,8 @@ def fitLinePolar(theta, rho, C_TR): #usectr = 0):
     sn = math.sin(theta)
     sn2 = math.sin(2*theta)
 
-    thetaTemp = np.multiply(np.transpose(theta), np.ones((1, N), dtype=float))
+    #thetaTemp = np.multiply(np.transpose(theta), np.ones((1, N), dtype=float))
+    thetaTemp = np.multiply(np.transpose(theta), np.ones((1, N)))
     thetaDyadSum = thetaTemp + np.transpose(thetaTemp)
     cosThetaDyadSum = math.cos(thetaDyadSum)
 
@@ -50,11 +51,11 @@ def fitLinePolar(theta, rho, C_TR): #usectr = 0):
     ######if C_TR
     sinThetaDyadSum = math.sin(thetaDyadSum)
     mult = np.multiply(rhoDyad, sinThetaDyadSum)
-    grad_thetaCsIJ = -np.matrix.sum(mult[0])-np.transpose(np.matrix.sum(mult[1]))
+    grad_thetaCsIJ = -np.matrix.sum(mult,axis=0)-np.transpose(np.matrix.sum(mult,axis=1))
     grad_rhoCsIJ = 2 * rho @ cosThetaDyadSum
     ######
 
-    y=rhoSquare @ np.transpose(sn2) -2/N @ rho @ np.transpose(cs) @ rho @ np.transpose(sn)
+    y=rhoSquare @ np.transpose(sn2) -2/N * rho @ np.transpose(cs) @ rho @ np.transpose(sn)
     x=rhoSquare @ np.transpose(cs2) - csIJ /N
 
     alpha = 0.5 * (math.atan2(y, x)+math.pi)
