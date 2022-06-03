@@ -168,20 +168,26 @@ def mergeColinear(xy, alpha, r, pointidx, thresholds):
 
 
 def pol2cart(theta, rho):
-    x = rho * np.cos(theta)
-    y = rho * np.sin(theta)
-    return(x, y)
+    x = np.zeros((1,theta.shape[0]))
+    y = np.zeros((1,theta.shape[0]))
+    for i in range(0, theta.shape[0]):
+        x[0,i] = rho[i,0] * np.cos(theta[i,0])
+        y[0,i] = rho[i,0] * np.sin(theta[i,0])
+    return x, y
 
 
-def extractlines(xy, thersholds):
+def extractlines(theta, rho, thersholds):
     # passa de coordenadas polares para cartesianas
 
-    # x,y = pol2cart(theta, rho)
+    x,y = pol2cart(theta, rho)
 
-    # xy = [[x],[y]]
+    xy = np.vstack((x,y))
+    #xy = np.concatenate((x,y),axis=0)
+    print(xy)
 
     startidx =0
     endidx = xy.shape[1] -1 #x e y são vetores linha
+
     # faz a extracao das linhas
     alpha, r, pointsidx = splitlines(xy, startidx, endidx, thersholds)
 
@@ -226,15 +232,21 @@ def extractlines(xy, thersholds):
     segmends = segmends[goodsegmidx[:, 1], :]
     segmlen = np.transpose(segmlen)
     segmlen = segmlen[goodsegmidx[:, 1], 0]
-    return alpha, r, segmends, segmlen, pointsidx
+
+    #z = np.zeros((alpha.shape[0] - 1, r.shape[0] - 1))
+    z = np.transpose(np.vstack(alpha,r))
+
+    R_seg = np.zeros((1, 1, len([len(alpha), 1]) - 1))
+
+    return z, R_seg, segmends
 
 
 
 
 if __name__ == '__main__':
-    pontos = np.matrix([[1, 2, 3, 3, 3], [1, 1, 1, 2, 3]])
+    #pontos = np.matrix([[1, 2, 3, 3, 3], [1, 1, 1, 2, 3]])
     
-    alpha, r = fitline(pontos)
+    #alpha, r = fitline(pontos)
     thresholds = Thresholds()
 
     """
@@ -255,8 +267,12 @@ if __name__ == '__main__':
     #print(rv)
     # print(idxv)
     # print(splitpos)
-    
-    alphav, rv, segmends, segmlen, pointsidx = extractlines(pontos, thresholds)
+
+    theta = np.matrix([[-40*pi/180], [-20*pi/180], [0*pi/180], [20*pi/180], [40*pi/180]])
+    rho = np.matrix([[1/math.cos(-40*(pi/180))], [1/math.cos(-20*(pi/180))], [1], [1/math.cos(20*(pi/180))], [1/math.cos(40*(pi/180))]])
+    print(theta)
+    print(rho)
+    z, R_seg, segmends = extractlines(theta, rho, thresholds)
     """
     print(alphav)
     print(rv)

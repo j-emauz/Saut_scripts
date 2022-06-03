@@ -163,8 +163,14 @@ def mergeColinear(xy, alpha, r, pointidx, thresholds):
 
 
 if __name__ == '__main__':
-    pontos = np.matrix([[0, 1, 2, 3, 4, 5, 6, 7], [1, 1, 1, 1, 1, 1, 1, 1]])
+    pontos = np.matrix([[1, 1, 1, 1, 1], [-0.83909963, -0.36397023, 0.0, 0.36397023, 0.83909963]])
 
+
+    alpha, r = fitline(pontos)
+    print(alpha)
+    print(r)
+
+    '''
     thresholds = Thresholds()
     alphav = np.array([[1.57079633],[1.57079633]])
     rv = np.array([[1],[1]])
@@ -173,4 +179,9 @@ if __name__ == '__main__':
 
     alphav, rv, idxv = mergeColinear(pontos, alphav, rv, idxv, thresholds)
 
+
+    #for i in range (1,N):
+    #    segend(i,:) = [XY(:, pointIdx(i, 1))' XY(:, pointIdx(i,2))'];
+
     print(idxv)
+    '''
