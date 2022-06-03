@@ -5,7 +5,7 @@ import math
 import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
-import cv2 as cv
+#import cv2 as cv
 
 
 class Thresholds:
@@ -117,52 +117,72 @@ def mergeColinear(xy, alpha, r, pointidx, thresholds):
     N = r.shape[0]
     zt = [0, 0]
 
-    rOut = np.zeros((r.shape[0],1))
-    alphaOut = np.zeros((alpha.shape[0], 1))
-    pointidxOut = np.zeros((1, 1))
+    #rOut = np.zeros((r.shape[0],1))
+    #alphaOut = np.zeros((alpha.shape[0], 1))
+    #pointidxOut = np.zeros((1, 2))
+    rOut = []
+    alphaOut = []
+    pointidxOut = []
+
 
     j = 0
 
-    for i in range(1, N-1):
+    for i in range(1, N):
         endidx = pointidx[i,1]
 
-        zt[0], zt[1] = fitline(xy[:, startidx:endidx])
+        zt[0], zt[1] = fitline(xy[:, startidx:(endidx + 1)])
 
-        splitpos = findsplitpos(xy[:, startidx:endidx], zt[0], zt[1], thresholds)
+        splitpos = findsplitpos(xy[:, startidx:(endidx + 1)], zt[0], zt[1], thresholds)
+
 
         #Se nao for necessario fazer split, fazemos merge
         if splitpos == -1:
             z = zt
         else: #Sem mais merges
-            alphaOut[j, 0] = z[0]
-            rOut[j, 0] = z[1]
-            pointidxOut[j, :] = [startidx, lastendidx]
+            #alphaOut[j, 0] = z[0]
+            alphaOut.append(z[0])
+            rOut.append(z[1])
+            #rOut[j, 0] = z[1]
+            print('Dentro do else')
+            print(startidx)
+            print(lastendidx)
+            pointidxOut.extend([startidx, lastendidx])
+            #pointidxOut = np.vstack((pointidxOut,[startidx, lastendidx]))
             j = j + 1
-            z = [alpha(i), r(i)]
-            startIdx = pointidx(i, 0)
+            z = [alpha[i, 0], r[i, 0]]
+            startidx = pointidx[i, 0]
 
 
         lastendidx = endidx
 
     #Adicionar o ultimo segmento
-    alphaOut[j, 0] = z[0]
-    rOut[j, 0] = z[1]
-    pointidxOut[j, :] = [startidx, lastendidx]
+    alphaOut.append(z[0])
+    rOut.append(z[1])
+    pointidxOut.extend([startidx, lastendidx])
+
+    pointidxOut = np.array(pointidxOut)
+    pointidxOut = np.reshape(pointidxOut, (j+1, 2))
+    alphaOut = np.array(alphaOut)
+    alphaOut = np.reshape(alphaOut, (j + 1, 1))
+    rOut = np.array(rOut)
+    rOut = np.reshape(rOut, (j+1, 1))
 
     return alphaOut, rOut, pointidxOut
 
 
 
 if __name__ == '__main__':
-    pontos = np.matrix([[1, 2, 3, 3, 3], [1, 1, 1, 2, 3]])
+    pontos = np.matrix([[1, 1.5, 2, 2.5, 3, 3, 3, 3, 3], [1, 1, 1, 1, 1, 1, 1, 1, 1]])
     
     alpha, r = fitline(pontos)
     thresholds = Thresholds()
 
-    alphav, rv, idxv = splitlines(pontos, 0, 4, thresholds)
+    alphav, rv, idxv = splitlines(pontos, 0, 8, thresholds)
+
+    print(idxv)
 
     N = rv.shape[0]
-    print(N)
+    #print(N)
 
     if N > 1:
         alphav, rv, idxv = mergeColinear(pontos, alphav, rv, idxv, thresholds)
@@ -170,8 +190,8 @@ if __name__ == '__main__':
 
 
     # splitpos = findsplitpos(pontos[:, startidx:(endidx + 1)], alpha, r, thresholds)
-    print(alphav)
-    print(rv)
+    #print(alphav)
+    #print(rv)
     print(idxv)
     # print(splitpos)
     

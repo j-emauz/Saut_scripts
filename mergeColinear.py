@@ -4,26 +4,25 @@ from fitline import fitline
 from findSplitPos import findSplitPos
 
 def mergeColinear(xy, alpha, r, pointidx, thresholds):
-    z = [alpha(1), r(1)]
-    startidx = pointidx(1,1)
-    lastendidx = pointidx(1,2)
+    z = [alpha[0, 0], r[0, 0]]
+    startidx = pointidx[0, 0]
+    lastendidx = pointidx[0, 1]
 
     N = r.shape[0]
     zt = [0, 0]
 
-    rOut = np.zeros((len(r)),1)
-    alphaOut = np.zeros((len(alpha)), 1)
-    pointidxOut = np.zeros((len(alpha)), 1)
+    rOut = np.zeros((r.shape[0],1))
+    alphaOut = np.zeros((alpha.shape[0], 1))
+    pointidxOut = np.zeros((1, 1))
 
     j = 0
 
     for i in range(1, N-1):
-        endidx = pointidx(i,1)
+        endidx = pointidx[i,1]
 
-        #Fitline retorna alpha e r
         zt[0], zt[1] = fitline(xy[:, startidx:endidx])
 
-        splitpos = findSplitPos(xy[:, startidx:endidx], zt[0], zt[1], thresholds)
+        splitpos = findsplitpos(xy[:, startidx:endidx], zt[0], zt[1], thresholds)
 
         #Se nao for necessario fazer split, fazemos merge
         if splitpos == -1:
@@ -31,7 +30,7 @@ def mergeColinear(xy, alpha, r, pointidx, thresholds):
         else: #Sem mais merges
             alphaOut[j, 0] = z[0]
             rOut[j, 0] = z[1]
-            pointidxOut[j, :] = [startidx, lastendidx]
+            pointidxOut = np.vstack((pointidxOut,[startidx, lastendidx]))
             j = j + 1
             z = [alpha(i), r(i)]
             startIdx = pointidx(i, 0)
@@ -45,6 +44,7 @@ def mergeColinear(xy, alpha, r, pointidx, thresholds):
     pointidxOut[j, :] = [startidx, lastendidx]
 
     return alphaOut, rOut, pointidxOut
+
 
 
 def main():
