@@ -12,7 +12,7 @@ class Thresholds:
     def __init__(self):
         self.seg_min_length = 0.01
         self.point_dist = 0.05
-        self.min_point_seg = 20
+        self.min_point_seg = 1
 
 
 
@@ -143,9 +143,6 @@ def mergeColinear(xy, alpha, r, pointidx, thresholds):
             alphaOut.append(z[0])
             rOut.append(z[1])
             #rOut[j, 0] = z[1]
-            print('Dentro do else')
-            print(startidx)
-            print(lastendidx)
             pointidxOut.extend([startidx, lastendidx])
             #pointidxOut = np.vstack((pointidxOut,[startidx, lastendidx]))
             j = j + 1
@@ -170,13 +167,77 @@ def mergeColinear(xy, alpha, r, pointidx, thresholds):
     return alphaOut, rOut, pointidxOut
 
 
+def pol2cart(theta, rho):
+    x = rho * np.cos(theta)
+    y = rho * np.sin(theta)
+    return(x, y)
+
+
+def extractlines(xy, thersholds):
+    # passa de coordenadas polares para cartesianas
+
+    # x,y = pol2cart(theta, rho)
+
+    # xy = [[x],[y]]
+
+    startidx =0
+    endidx = xy.shape[1] -1 #x e y são vetores linha
+    # faz a extracao das linhas
+    alpha, r, pointsidx = splitlines(xy, startidx, endidx, thersholds)
+
+    # numero de segmentos de reta, caso seja mais do que um segmento, vereifica se sao colineares
+    n = r.shape[0]
+    if n > 1:
+        alpha, r, pointsidx = mergeColinear(xy, alpha, r, pointsidx, thersholds)
+        n = r.shape[0]
+        # atualiza o numero de segmentos
+
+    # definir coordenads dos endpoints e len dos segmentos
+    segmends = np.zeros((n, 4))
+    segmlen = np.zeros((n, 1))
+    #for l in range(0, n):
+    #    print(np.concatenate([np.transpose(xy[:, pointsidx[l, 0]]), np.transpose(xy[:, pointsidx[l, 1]])], axis = 1))
+
+    for l in range(0, n):
+        segmends[l, :] = np.concatenate([np.transpose(xy[:, pointsidx[l, 0]]), np.transpose(xy[:, pointsidx[l, 1]])], axis = 1)
+        # segmends[l, :] = [np.transpose(xy[:, pointsidx[l, 0]]), np.transpose(xy[:, pointsidx[l, 1]])]
+        #for j in range(0:4):
+        #    segmends[l, j] = [xy[j, pointsidx[l, 0]]]
+        segmlen[l] = math.sqrt((segmends[l, 0] - segmends[l, 2]) ** 2 + (segmends[l, 1] - segmends[l, 3]) ** 2)
+        
+    segmlen = np.transpose(segmlen)
+    # print(((pointsidx[:,1] - pointsidx[:,0]) >= thersholds.min_point_seg))
+    # print((segmlen >= thersholds.seg_min_length))
+    # print((segmlen >= thersholds.seg_min_length) & ((pointsidx[:,1] - pointsidx[:,0]) >= thersholds.min_point_seg))
+
+    
+    # remover segmentos demasiados pequenos
+    #alterar thersholds para params.MIN_SEG_LENGTH e params.MIN_POINTS_PER_SEGMENT
+    goodsegmidx = np.argwhere((segmlen >= thersholds.seg_min_length) & ((pointsidx[:,1] - pointsidx[:,0]) >= thersholds.min_point_seg))
+    #print(goodsegmidx)
+    # goodsegmix2 = goodsegmidx[0, 1]:goodsegmidx[(goodsegmidx.shape[0]), 1]
+    # print(goodsegmix2)
+    pointsidx = pointsidx[goodsegmidx[:, 1], :]
+    #print(pointsidx)
+    #print(pointsidx)
+    alpha = alpha[goodsegmidx[:, 1], 0]
+    r = r[goodsegmidx[:, 1], 0]
+    #print(segmends)
+    segmends = segmends[goodsegmidx[:, 1], :]
+    segmlen = np.transpose(segmlen)
+    segmlen = segmlen[goodsegmidx[:, 1], 0]
+    return alpha, r, segmends, segmlen, pointsidx
+
+
+
 
 if __name__ == '__main__':
-    pontos = np.matrix([[1, 1.5, 2, 2.5, 3, 3, 3, 3, 3], [1, 1, 1, 1, 1, 1, 1, 1, 1]])
+    pontos = np.matrix([[1, 2, 3, 3, 3], [1, 1, 1, 2, 3]])
     
     alpha, r = fitline(pontos)
     thresholds = Thresholds()
 
+    """
     alphav, rv, idxv = splitlines(pontos, 0, 8, thresholds)
 
     print(idxv)
@@ -187,12 +248,19 @@ if __name__ == '__main__':
     if N > 1:
         alphav, rv, idxv = mergeColinear(pontos, alphav, rv, idxv, thresholds)
 
-
+    """
 
     # splitpos = findsplitpos(pontos[:, startidx:(endidx + 1)], alpha, r, thresholds)
     #print(alphav)
     #print(rv)
-    print(idxv)
+    # print(idxv)
     # print(splitpos)
     
-  
+    alphav, rv, segmends, segmlen, pointsidx = extractlines(pontos, thresholds)
+    """
+    print(alphav)
+    print(rv)
+    print(segmends)
+    print(segmlen)
+    print(pointsidx)
+    """
