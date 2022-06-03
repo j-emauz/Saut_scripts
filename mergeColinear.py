@@ -33,7 +33,7 @@ def mergeColinear(xy, alpha, r, pointidx, thresholds):
             pointidxOut[j, :] = [startidx, lastendidx]
             j = j + 1
             z = [alpha(i), r(i)]
-            startIdx = pointIdx(i, 0)
+            startIdx = pointidx(i, 0)
 
 
         lastendidx = endidx
