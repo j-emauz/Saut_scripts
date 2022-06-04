@@ -29,8 +29,8 @@ def fitline(pontos):
     dx = (pontos[0, :] - xc)
     dy = (pontos[1, :] - yc)
 
-    num = -2 * np.sum(np.multiply(dx, dy))
-    denom = np.sum(np.multiply(dy, dy) - np.multiply(dx, dx))
+    num = -2 * np.matrix.sum(np.multiply(dx, dy))
+    denom = np.matrix.sum(np.multiply(dy, dy) - np.multiply(dx, dx))
     alpha = math.atan2(num, denom) / 2
 
     r = xc * math.cos(alpha) + yc * math.sin(alpha)
@@ -55,13 +55,10 @@ def compdistpointstoline(xy, alpha, r):
 def findsplitposid(d, thresholds):
     # implementaçao simples
     # print('d = ', end = '')
-    print('LOLOLOLOLOLOOLLO')
-    d = np.transpose(d)
-    print(d)
-
+    # print(d)
     N = d.shape[1]
     # print('N =', end='')
-    print(N)
+    # print(N)
 
     d = abs(d)
     # print(d)
@@ -180,16 +177,14 @@ def pol2cart(theta, rho):
 
 
 def extractlines(theta, rho, thersholds):
-    #passa de coordenadas polares para cartesianas
+    # passa de coordenadas polares para cartesianas
 
     x,y = pol2cart(theta, rho)
 
-    #xy = np.vstack((x,y))
-    xy = np.concatenate((x,y),axis=0)
-    #xy = np.array(xy)
-    print(xy)
-
-    #xy = np.array([[1, 1, 1, 1, 1],[-0.83909963, -0.36397023, 0, 0.36397023, 0.83909963]])
+    xy = np.vstack((x,y))
+    #xy = np.concatenate((x,y),axis=0)
+    xy = np.asmatrix(xy)
+    #print(xy)
 
     startidx =0
     endidx = xy.shape[1] -1 #x e y são vetores linha
@@ -209,9 +204,9 @@ def extractlines(theta, rho, thersholds):
     segmlen = np.zeros((n, 1))
     #for l in range(0, n):
     #    print(np.concatenate([np.transpose(xy[:, pointsidx[l, 0]]), np.transpose(xy[:, pointsidx[l, 1]])], axis = 1))
-
+    pointsidx = np.asmatrix(pointsidx)
     for l in range(0, n):
-        segmends[l, :] = np.concatenate([np.transpose(xy[:, pointsidx[l, 0]]), np.transpose(xy[:, pointsidx[l, 1]])], axis=1)
+        segmends[l, :] = np.concatenate([np.transpose(xy[:, pointsidx[l, 0]]), np.transpose(xy[:, pointsidx[l, 1]])], axis = 1)
         # segmends[l, :] = [np.transpose(xy[:, pointsidx[l, 0]]), np.transpose(xy[:, pointsidx[l, 1]])]
         #for j in range(0:4):
         #    segmends[l, j] = [xy[j, pointsidx[l, 0]]]
@@ -232,6 +227,7 @@ def extractlines(theta, rho, thersholds):
     pointsidx = pointsidx[goodsegmidx[:, 1], :]
     #print(pointsidx)
     #print(pointsidx)
+    alpha = np.asmatrix(alpha)
     alpha = alpha[goodsegmidx[:, 1], 0]
     r = r[goodsegmidx[:, 1], 0]
     #print(segmends)
@@ -240,7 +236,8 @@ def extractlines(theta, rho, thersholds):
     segmlen = segmlen[goodsegmidx[:, 1], 0]
 
     #z = np.zeros((alpha.shape[0] - 1, r.shape[0] - 1))
-    z = np.transpose(np.vstack(alpha,r))
+    z = np.transpose(np.vstack((alpha,r)))
+    print(z)
 
     R_seg = np.zeros((1, 1, len([len(alpha), 1]) - 1))
 
@@ -274,10 +271,10 @@ if __name__ == '__main__':
     # print(idxv)
     # print(splitpos)
 
-    theta = np.array([[-40*pi/180], [-20*pi/180], [0*pi/180], [20*pi/180], [40*pi/180]])
-    rho = np.array([[1/math.cos(-40*(pi/180))], [1/math.cos(-20*(pi/180))], [1], [1/math.cos(20*(pi/180))], [1/math.cos(40*(pi/180))]])
-    print(theta)
-    print(rho)
+    theta = np.matrix([[-40*pi/180], [-20*pi/180], [0*pi/180], [20*pi/180], [40*pi/180]])
+    rho = np.matrix([[1/math.cos(-40*(pi/180))], [1/math.cos(-20*(pi/180))], [1], [1/math.cos(20*(pi/180))], [1/math.cos(40*(pi/180))]])
+    #print(theta)
+    #print(rho)
     z, R_seg, segmends = extractlines(theta, rho, thresholds)
     """
     print(alphav)

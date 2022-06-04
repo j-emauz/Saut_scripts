@@ -1,5 +1,6 @@
 import sys
 
+from cmath import pi
 import math
 import matplotlib
 import matplotlib.pyplot as plt
@@ -42,7 +43,7 @@ X5 = [P51[0], P52[0]]
 Y5 = [P51[1], P52[1]]
 
 INPUT_NOISE = np.diag([0.01, np.deg2rad(0.5)])  # ** 2
-SIM_TIME = 64
+SIM_TIME = 0
 DT = 0.1
 
 R = np.diag([
@@ -152,7 +153,7 @@ def laser_model(x_true, tl):
     r_error = 0.1**2 * np.random.randn(1)
 
     if intersect(P51, P52, pl1, pl2):
-        laser_scan = get_intersect(P51, P52, pl1, pl2) 
+        laser_scan = get_intersect(P51, P52, pl1, pl2)
         r = np.linalg.norm(pl1-laser_scan)
     elif intersect(P11, P12, pl1, pl2):
         laser_scan = get_intersect(P11, P12, pl1, pl2) 
@@ -177,42 +178,35 @@ def laser_model(x_true, tl):
     # laser_scan = laser_scan + (r_error*math.cos(tl), r_error*math.sin(tl))
     return laser_scan, r, r_error
 
-
-
-
 """
+Codigo para parte de extract lines 
+
+
 #funcoes para extract lines com dados do lazer
 def pol2cart(theta, rho):
-
     x = rho * np.cos(theta)
     y = rho * np.sin(theta)
     return(x, y)
 
-def splitlines(xy, startidx, endidx, thersholds):
+def splitlines(xy, startidx, endidx, thersholds)
     return(alpha, r, idx)
 
 def mergecolinear(xy, alpha, r, pointsidx, thersholds):
     return(alphaout, rout, pointsidxout)
-    
-def filLinePolar():
-    return        
 
-"""
-
-"""
 #substituir theta e rho pelos dados do lazer
-def extractlines(theta, rho, c_tr, thersholds):
+def extractlines(theta, rho, thersholds):
     #passa de coordenadas polares para cartesianas
-
+    xy = np.zeros((1,0))
     xy = pol2cart(theta, rho)
 
     #faz a extracao das linhas
-    alpha, r, pointsidx = splitlines(xy, 0, len[xy, 1], thersholds)
+    alpha, r, pointsidx = splitlines(xy, 0, len(XY, 1), thersholds)
 
     #numero de segmentos de reta, caso seja mais do que um segmento, vereifica se sao colineares
     n= len(r)
     if n>1:
-        alpha, r, pointsidx = mergecolinear(xy, alpha, r, pointsidx, thersholds)
+        alpha, r, pointidx = mergecolinear(xy, alpha, r, pointsidx, thersholds)
         n= len(r)
         #atualiza o numero de segmentos
 
@@ -221,7 +215,7 @@ def extractlines(theta, rho, c_tr, thersholds):
     segmlen = np.zeros(n-1, 0)
 
     for l in range(0, n-1):
-        segmends[l, :] =[np.transpose(xy[:, pointsidx(l,0)]), np.transpose(xy[:, pointsidx(l,1)])]
+        segmends[l, :] =
         segmlen[l] = math.sqrt((segmends((l,0)) - segmends((l,2)))**2 + (segmends((l,1)) - segmends((l,3)))**2)
 
     #remover segmentos demasiados pequenos ???
@@ -229,23 +223,258 @@ def extractlines(theta, rho, c_tr, thersholds):
     #definiçao de z, R
     z = np.zeros((len(alpha)-1, len(r)-1))
     z = ([[alpha],[r]])
-
-    R_seg = np.zeros((2, 2, len(len(alpha), 1)))
-    n_alpha= len(alpha)
-
-    if len(c_tr) >0:
-        R_seg = np.zeros((2, 2, len(len(alpha), 1)))
-
-        for k in range(0, n_alpha-1):
-            aux_range = len(range(pointsidx(k, 0), pointsidx(k,1)))
-            npointsegm= len([range, 1])
-            c_trmat = [[c_tr(aux_range-1, aux_range-1), np.zeros(npointsegm-1)], [np.zeros(npointsegm-1), c_tr(n_alpha + aux_range -1, n_alpha + aux_range -1)]]
-            R_seg = firlinepolar(theta(aux_range-1), rho(aux_range-1), c_trmat)[2]
-
+    
     return z, r, segmends
+    
 """
 
+# Split and merge funçoes
 
+class Thresholds:
+    def __init__(self):
+        self.seg_min_length = 0.01
+        self.point_dist = 0.05
+        self.min_point_seg = 20
+
+
+def fitline(pontos):
+    # centroid de pontos considerando que o centroid de
+    # um numero finito de pontos pode ser obtido como
+    # a media de cada coordenada
+
+    lixo, len = pontos.shape
+    # alpha = np.zeros((1,1))
+
+    xc, yc = pontos.sum(axis=1) / len
+    dx = (pontos[0, :] - xc)
+    dy = (pontos[1, :] - yc)
+
+    num = -2 * np.matrix.sum(np.multiply(dx, dy))
+    denom = np.matrix.sum(np.multiply(dy, dy) - np.multiply(dx, dx))
+    alpha = math.atan2(num, denom) / 2
+
+    r = xc * math.cos(alpha) + yc * math.sin(alpha)
+
+    if r < 0:
+        alpha = alpha + math.pi
+        if alpha > pi:
+            alpha = alpha - 2 * math.pi
+        r = -r
+
+    return alpha, r
+
+
+def compdistpointstoline(xy, alpha, r):
+    xcosa = xy[0, :] * math.cos(alpha)
+    ysina = xy[1, :] * math.sin(alpha)
+    d = xcosa + ysina - r
+    return d
+
+
+def findsplitposid(d, thresholds):
+    # implementaçao simples
+    # print('d = ', end = '')
+    # print(d)
+    N = d.shape[1]
+    # print('N =', end='')
+    # print(N)
+
+    d = abs(d)
+    # print(d)
+    mask = d > thresholds.point_dist
+    # print('mask =', end='')
+    # print(mask)
+    if not np.any(mask):
+        splitpos = -1
+        return splitpos
+
+    splitpos = np.argmax(d)
+    # print(splitpos)
+    if (splitpos == 0):
+        splitpos = 1
+    if (splitpos == (N - 1)):
+        splitpos = N - 2
+    return splitpos
+
+
+def findsplitpos(xy, alpha, r, thresholds):
+    d = compdistpointstoline(xy, alpha, r)
+    splitpos = findsplitposid(d, thresholds)
+    return splitpos
+
+
+def splitlines(xy, startidx, endidx, thresholds):
+    N = endidx - startidx + 1
+
+    alpha, r = fitline(xy[:, startidx:(endidx + 1)])
+
+    if N <= 2:
+        idx = [startidx, endidx]
+        return alpha, r, idx
+
+    splitpos = findsplitpos(xy[:, startidx:(endidx + 1)], alpha, r, thresholds)
+    # print(splitpos)
+    if (splitpos != -1):
+        alpha1, r1, idx1 = splitlines(xy, startidx, splitpos + startidx, thresholds)  # se calhar start idx-1
+        alpha2, r2, idx2 = splitlines(xy, splitpos + startidx, endidx, thresholds)
+        alpha = np.vstack((alpha1, alpha2))
+        r = np.vstack((r1, r2))
+        idx = np.vstack((idx1, idx2))
+    else:
+        idx = np.array([startidx, endidx])
+
+    return alpha, r, idx
+
+
+def mergeColinear(xy, alpha, r, pointidx, thresholds):
+    z = [alpha[0, 0], r[0, 0]]
+    startidx = pointidx[0, 0]
+    lastendidx = pointidx[0, 1]
+
+    N = r.shape[0]
+    zt = [0, 0]
+
+    # rOut = np.zeros((r.shape[0],1))
+    # alphaOut = np.zeros((alpha.shape[0], 1))
+    # pointidxOut = np.zeros((1, 2))
+    rOut = []
+    alphaOut = []
+    pointidxOut = []
+
+
+
+    j = 0
+
+    for i in range(1, N):
+        endidx = pointidx[i, 1]
+        #print(z)
+        zt[0], zt[1] = fitline(xy[:, startidx:(endidx + 1)])
+
+        splitpos = findsplitpos(xy[:, startidx:(endidx + 1)], zt[0], zt[1], thresholds)
+        zt[1] = np.matrix.item(zt[1])
+        # Se nao for necessario fazer split, fazemos merge
+        #print(zt[1])
+        if splitpos == -1:
+            z = zt
+        else:  # Sem mais merges
+            # alphaOut[j, 0] = z[0]
+            alphaOut.append(z[0])
+            #print(z)
+            #print(z[1][0, 0])
+            #list = np.matrix.tolist(z[1])
+            #print(list)
+            rOut.append(z[1])
+            #print(rOut)
+            # rOut[j, 0] = z[1]
+            pointidxOut.extend([startidx, lastendidx])
+            # pointidxOut = np.vstack((pointidxOut,[startidx, lastendidx]))
+            j = j + 1
+            z = [alpha[i, 0], r[i, 0]]
+            startidx = pointidx[i, 0]
+
+        lastendidx = endidx
+
+    # Adicionar o ultimo segmento
+    alphaOut.append(z[0])
+    rOut.append(z[1])
+    pointidxOut.extend([startidx, lastendidx])
+
+    pointidxOut = np.array(pointidxOut)
+    pointidxOut = np.reshape(pointidxOut, (j + 1, 2))
+    alphaOut = np.array(alphaOut)
+    alphaOut = np.reshape(alphaOut, (j + 1, 1))
+    rOut = np.array(rOut)
+    rOut = np.reshape(rOut, (j + 1, 1))
+    rOut = np.asmatrix(rOut)
+    #print(rOut)
+
+
+    return alphaOut, rOut, pointidxOut
+
+
+def pol2cart(theta, rho):
+    x = np.zeros((1, theta.shape[0]))
+    y = np.zeros((1, theta.shape[0]))
+    for i in range(0, theta.shape[0]):
+        x[0, i] = rho[i, 0] * np.cos(theta[i, 0])
+        y[0, i] = rho[i, 0] * np.sin(theta[i, 0])
+    return x, y
+
+
+def extractlines(theta, rho, thersholds):
+    # passa de coordenadas polares para cartesianas
+
+    x, y = pol2cart(theta, rho)
+
+    xy = np.vstack((x, y))
+
+    # xy = np.concatenate((x,y),axis=0)
+    xy = np.asmatrix(xy)
+
+    # print(xy)
+
+    startidx = 0
+    endidx = xy.shape[1] - 1  # x e y são vetores linha
+
+    # faz a extracao das linhas
+    alpha, r, pointsidx = splitlines(xy, startidx, endidx, thersholds)
+
+    # numero de segmentos de reta, caso seja mais do que um segmento, vereifica se sao colineares
+    n = r.shape[0]
+    if n > 1:
+        alpha, r, pointsidx = mergeColinear(xy, alpha, r, pointsidx, thersholds)
+        #HA AQUI UM PROBLEMA NO R
+        n = r.shape[0]
+        # atualiza o numero de segmentos
+
+    # definir coordenads dos endpoints e len dos segmentos
+    segmends = np.zeros((n, 4))
+    segmlen = np.zeros((n, 1))
+    # for l in range(0, n):
+    #    print(np.concatenate([np.transpose(xy[:, pointsidx[l, 0]]), np.transpose(xy[:, pointsidx[l, 1]])], axis = 1))
+    pointsidx = np.asmatrix(pointsidx)
+    for l in range(0, n):
+        segmends[l, :] = np.concatenate([np.transpose(xy[:, pointsidx[l, 0]]), np.transpose(xy[:, pointsidx[l, 1]])],
+                                        axis=1)
+        # segmends[l, :] = [np.transpose(xy[:, pointsidx[l, 0]]), np.transpose(xy[:, pointsidx[l, 1]])]
+        # for j in range(0:4):
+        #    segmends[l, j] = [xy[j, pointsidx[l, 0]]]
+        segmlen[l] = math.sqrt((segmends[l, 0] - segmends[l, 2]) ** 2 + (segmends[l, 1] - segmends[l, 3]) ** 2)
+
+    segmlen = np.transpose(segmlen)
+    # print(((pointsidx[:,1] - pointsidx[:,0]) >= thersholds.min_point_seg))
+    # print((segmlen >= thersholds.seg_min_length))
+    # print((segmlen >= thersholds.seg_min_length) & ((pointsidx[:,1] - pointsidx[:,0]) >= thersholds.min_point_seg))
+
+    # remover segmentos demasiados pequenos
+    # alterar thersholds para params.MIN_SEG_LENGTH e params.MIN_POINTS_PER_SEGMENT
+    goodsegmidx = np.argwhere(
+        (segmlen >= thersholds.seg_min_length) & ((pointsidx[:, 1] - pointsidx[:, 0]) >= thersholds.min_point_seg))
+    # print(goodsegmidx)
+    # goodsegmix2 = goodsegmidx[0, 1]:goodsegmidx[(goodsegmidx.shape[0]), 1]
+    # print(goodsegmix2)
+    pointsidx = pointsidx[goodsegmidx[:, 1], :]
+    # print(pointsidx)
+    # print(pointsidx)
+    alpha = np.asmatrix(alpha)
+    alpha = alpha[goodsegmidx[:, 1], 0]
+    #r = np.asmatrix(r)
+    #print(r)
+    r = r[goodsegmidx[:, 1], 0]
+    # print(segmends)
+    segmends = segmends[goodsegmidx[:, 1], :]
+    segmlen = np.transpose(segmlen)
+    segmlen = segmlen[goodsegmidx[:, 1], 0]
+
+    #print(alpha)
+    #print(r)
+    # z = np.zeros((alpha.shape[0] - 1, r.shape[0] - 1))
+    z = np.transpose(np.hstack((alpha, r))) #mudei para hstack
+    print(z)
+
+    R_seg = np.zeros((1, 1, len([len(alpha), 1]) - 1))
+
+    return z, R_seg, segmends
 
 
 if __name__ == '__main__':
@@ -277,8 +506,11 @@ if __name__ == '__main__':
         # i += 1
     
     scan_m = np.zeros((2, i))
+    dist = np.zeros((i, 1))
+    thetas = np.zeros((i, 1))
 
-    
+    thresholds = Thresholds()
+
     #print(seg_intersect(P11,P12,P21,P22))
 
     # hz = np.zeros((2, 1))
@@ -326,6 +558,28 @@ if __name__ == '__main__':
             j += 1
             
             # print(rang)
+        f = 0
+        for k in range(0, scan_m.shape[1]):
+            dist[f] = scan_m[0, k]
+            thetas[f] = scan_m[1, k]
+            if scan_m[0, k] == float('inf'):
+                dist = np.delete(dist, f)
+                thetas = np.delete(thetas, f)
+                f -= 1
+            f += 1
+        dist = np.transpose(np.asmatrix(dist))
+        thetas = np.transpose(np.asmatrix(thetas))
+
+        #print("dist")
+        #print(dist)
+        #print("thetas")
+        #print(thetas)
+
+
+
+        z, R, asase = extractlines(thetas, dist, thresholds)
+
+        #print(z)
         
     
         #plot_covariance_ellipse(xEst, EEst)
@@ -335,6 +589,5 @@ if __name__ == '__main__':
         plt.grid(True)
         plt.pause(0.001)
 
-
-
+       
 
