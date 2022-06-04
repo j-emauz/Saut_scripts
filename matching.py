@@ -14,7 +14,9 @@ def matching (x, P, Z, R, M, g):
             W = H[:, :, aux_nmap + (aux_nme -1) * n_map] * P * np.transpose(H[:, :, aux_nmap + (aux_nme -1) * n_map]) + R_seg[:, :, aux_nme]
             d[aux_nme, aux_nmap] = np.transpose(v[:, aux_nmap + (aux_nme -1) * n_map]) * np.linalg.inv(W) * v[:, aux_nmap + (aux_nme -1) * n_map]
 
-
+    minima, mapidx = (np.transpose(d)).min(0),(np.transpose(d)).argmin(0)
+    measursidx = np.argwhere(minima < g**2)
+    mapidx = mapidx(measursidx)
 
     v = v[:, mapidx + (measursidx -1)* n_map]
     H =  H[:, :,  mapidx + (measursidx -1)* n_map]
