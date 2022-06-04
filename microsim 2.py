@@ -424,10 +424,11 @@ def extractlines(theta, rho, thersholds):
     R_seg = np.zeros((2, 2, alpha.shape[0]))
     for coco in range(0,alpha.shape[0]):
         for j in range(0,2):
-                R_seg[j,j,coco] = 0.1
+                R_seg[j,j,coco] = 0.5
 
 
     #R_seg = 0.1*np.identity(2)
+
 
     return z, R_seg, segmends
 
@@ -455,7 +456,7 @@ def updatemat(x, m):
     [h[0], h[1], isdistneg] = normalizelineparameters(h[0], h[1])
 
     if isdistneg:
-        Hxmat[2, :] = -Hxmat[2, :]
+        Hxmat[1, :] = -Hxmat[1, :]
 
     return h, Hxmat
 
@@ -465,8 +466,6 @@ def matching(x, P, Z, R_seg, M, g):
     n_measurs = Z.shape[1]
     n_map = M.shape[1]
 
-    print('n_map')
-    print(n_map)
 
     d = np.zeros((n_measurs, n_map))
     v = np.zeros((2, n_measurs * n_map))
@@ -501,6 +500,8 @@ def matching(x, P, Z, R_seg, M, g):
 
 
     mapidx = mapidx[np.transpose(measursidx)]
+    print('mapidx')
+    print(mapidx)
 
     seletor = (mapidx + (np.transpose(measursidx))* n_map)
     seletorl =[]
@@ -508,19 +509,61 @@ def matching(x, P, Z, R_seg, M, g):
         seletorl.append(seletor.item(fofo))
 
     v = v[:, seletorl]
+    print('v')
+    print(v)
+
     H = H[:, :, seletorl]
 
     #print(np.reshape(H, (H.shape[0]*H.shape[2],3), 'F'))
     #print(np.reshape(v, (v.shape[0]*v.shape[1],1), 'F'))
 
-    #R_seg = R_seg[:, :, measursidx]
-
-    R_seg1 = R_seg[:,:,0]
-    for bruh in range(1,R_seg.shape[2]):
-        R_seg1 = scipy.linalg.block_diag(R_seg1,R_seg[:,:,bruh])
-
+    measursidx = np.transpose(measursidx)
+    measuridxl = []
+    for beto in range(0, measursidx.shape[1]):
+        measuridxl.append(measursidx.item(beto))
+    if seletorl == []:
+        R_seg = R_seg[:, :, seletorl]
+    else:
+        R_seg = R_seg[:, :, measuridxl]
 
     return v, H, R_seg
+
+
+def step_update(x_pred, E_pred,  Z, R_seg, mapa, g):
+
+    if Z.shape[1]==0:
+        x_up = x_pred
+        E_up = E_pred
+
+    v, H, R_seg = matching(x_pred, E_pred, Z, R_seg, mapa, g)
+
+
+
+    #mudar formato de v, H e R para usar nas equacoes
+    y = np.reshape(v, (v.shape[0]*v.shape[1],1), 'F')
+
+    Hreshape = np.zeros((H.shape[0] * H.shape[2], 3))
+    cenoura = 0
+    for batata in range(0, H.shape[2]):
+        Hreshape[cenoura, :] = H[0, :, batata]
+        Hreshape[cenoura + 1, :] = H[1, :, batata]
+        cenoura = cenoura + 2
+
+    if R_seg.shape[2] == 0:
+        R_seg1 = []
+    else:
+        R_seg1 = R_seg[:, :, 0]
+        for bruh in range(1, R_seg.shape[2]):
+            R_seg1 = scipy.linalg.block_diag(R_seg1, R_seg[:, :, bruh])
+
+
+    S = Hreshape @ E_pred @ np.transpose(Hreshape) + R_seg1
+    K = E_pred @ np.transpose(Hreshape) @ (np.linalg.inv(S))
+
+    E_up = E_pred - K @ S @ np.transpose(K)
+    x_up = x_pred + K @ y
+
+    return x_up, E_up
 
 
 if __name__ == '__main__':
@@ -560,36 +603,13 @@ if __name__ == '__main__':
     mapa = np.array([[0, pi / 2, pi, -pi / 2, -pi / 4], [3, 3, 3, 3, 2.5 / (math.sqrt(2) * 2)]])
 
     # hz = np.zeros((2, 1))
-    while time <= 0:
+    while time <= SIM_TIME:
         time += DT
         j = 0
-
-        xTrue, xDR, ud = observation(xTrue, xDR, u)
-        xEst, EEst = ekf_estimation(xEst, EEst, ud)
-
-        # fazer historico de dados (para plot)
-        xEst_plot = np.hstack((xEst_plot, xEst))
-        xDR_plot = np.hstack((xDR_plot, xDR))
-        xTrue_plot = np.hstack((xTrue_plot, xTrue))
-        # scan_point = laser_model(xTrue)
-
         dist = np.zeros((i, 1))
         thetas = np.zeros((i, 1))
-        # simulaçao
-        plt.cla()
-
-        # for stopping simulation with the esc key.
-        plt.gcf().canvas.mpl_connect('key_release_event',
-                                     lambda event: [exit(0) if event.key == 'escape' else None])
-        plot_map()
-
-        plt.plot(xTrue_plot[0, :].flatten(),
-                 xTrue_plot[1, :].flatten(), "-b")
-        plt.plot(xDR_plot[0, :].flatten(),
-                 xDR_plot[1, :].flatten(), "-k")
-        plt.plot(xEst_plot[0, :].flatten(),
-                 xEst_plot[1, :].flatten(), "-r")
-
+        xTrue, xDR, ud = observation(xTrue, xDR, u)
+        xEst, EEst = ekf_estimation(xEst, EEst, ud)
         for tl in np.arange(-2.356194496154785, 2.0923497676849365, 0.05):
             scan_point, rang, rang_error = laser_model(xTrue, tl)
             """
@@ -616,6 +636,7 @@ if __name__ == '__main__':
                 thetas = np.delete(thetas, f)
                 f -= 1
             f += 1
+
         dist = np.transpose(np.asmatrix(dist))
         thetas = np.transpose(np.asmatrix(thetas))
 
@@ -625,12 +646,40 @@ if __name__ == '__main__':
         # print(thetas)
 
         z, Q, segends = extractlines(thetas, dist, thresholds)
-        v, H, Q = matching(xEst, EEst, z, Q, mapa, g)
+        #v, H, Q = matching(xEst, EEst, z, Q, mapa, g)
+
+        xEst, EEst = step_update(xEst, EEst, z, Q, mapa, g)
+
+        print(xTrue-xEst)
+
+        xEst = np.asarray(xEst)
+        # fazer historico de dados (para plot)
+        xEst_plot = np.hstack((xEst_plot, xEst))
+        xDR_plot = np.hstack((xDR_plot, xDR))
+        xTrue_plot = np.hstack((xTrue_plot, xTrue))
+        # scan_point = laser_model(xTrue)
 
 
+
+
+        # simulaçao
+        plt.cla()
+
+        # for stopping simulation with the esc key.
+        plt.gcf().canvas.mpl_connect('key_release_event',
+                                     lambda event: [exit(0) if event.key == 'escape' else None])
+        plot_map()
+
+        plt.plot(xTrue_plot[0, :].flatten(),
+                 xTrue_plot[1, :].flatten(), "-b")
+        plt.plot(xDR_plot[0, :].flatten(),
+                 xDR_plot[1, :].flatten(), "-k")
+        plt.plot(xEst_plot[0, :].flatten(),
+                 xEst_plot[1, :].flatten(), "-r")
 
         # print(z[1])
         # print(z)
+        '''
         for monkey in range(0, segends.shape[0]):
             segends = np.array(segends)
             point1 = [segends[monkey, 0], segends[monkey, 1]]
@@ -639,7 +688,7 @@ if __name__ == '__main__':
             y_values = [point1[1], point2[1]]
             plt.axis([-3.5, 3.5, -3.5, 3.5])
             plt.plot(x_values, y_values, '#03adfc')
-
+        '''
         # plot_covariance_ellipse(xEst, EEst)
 
         # plt.axis("equal")

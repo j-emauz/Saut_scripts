@@ -1,4 +1,4 @@
-def(x_pred, E_pred,  Z, R_seg, mapa, g):
+def step_update(x_pred, E_pred,  Z, R_seg, mapa, g):
 
     if Z.shape[1]==0:
         x_up = x_pred
