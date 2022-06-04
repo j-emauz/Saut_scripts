@@ -252,16 +252,16 @@ if __name__ == '__main__':
     xEst_plot = xEst
     xTrue_plot = xTrue
     
-    i = len(np.arange(-2.356194496154785, 2.0923497676849365, 0.05))
+    leni = len(np.arange(-2.356194496154785, 2.0923497676849365, 0.05))
         # i += 1
     
-    scan_m = np.zeros((2, i))
+    scan_m = np.zeros((2, leni))
 
     
     #print(seg_intersect(P11,P12,P21,P22))
 
     # hz = np.zeros((2, 1))
-    while time <= 0:
+    while time <= 65:
         time += DT
         j = 0
 
@@ -273,8 +273,9 @@ if __name__ == '__main__':
         xDR_plot = np.hstack((xDR_plot, xDR))
         xTrue_plot = np.hstack((xTrue_plot, xTrue))
         # scan_point = laser_model(xTrue)
-        
-        
+
+        dist = np.zeros((leni, 1))
+        thetas = np.zeros((leni, 1))
         # simulaçao
         plt.cla()
 
@@ -305,7 +306,19 @@ if __name__ == '__main__':
             j += 1
             
             # print(rang)
-        
+
+        f = 0
+
+        for k in range(0, scan_m.shape[1]):
+            dist[f] = scan_m[0, k]
+            thetas[f] = scan_m[1, k]
+            if scan_m[0, k] == float('inf'):
+                dist = np.delete(dist, f)
+                thetas = np.delete(thetas, f)
+                f -= 1
+            f += 1
+        dist = np.transpose(np.asmatrix(dist))
+        thetas = np.transpose(np.asmatrix(thetas))
     
         #plot_covariance_ellipse(xEst, EEst)
         

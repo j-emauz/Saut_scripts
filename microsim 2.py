@@ -234,7 +234,7 @@ class Thresholds:
     def __init__(self):
         self.seg_min_length = 0.01
         self.point_dist = 0.05
-        self.min_point_seg = 20
+        self.min_point_seg = 5
 
 
 def fitline(pontos):
@@ -449,28 +449,42 @@ def extractlines(theta, rho, thersholds):
     # remover segmentos demasiados pequenos
     # alterar thersholds para params.MIN_SEG_LENGTH e params.MIN_POINTS_PER_SEGMENT
     goodsegmidx = np.argwhere(
-        (segmlen >= thersholds.seg_min_length) & ((pointsidx[:, 1] - pointsidx[:, 0]) >= thersholds.min_point_seg))
+        np.transpose(segmlen >= thersholds.seg_min_length) & ((pointsidx[:, 1] - pointsidx[:, 0]) >= thersholds.min_point_seg))
     # print(goodsegmidx)
     # goodsegmix2 = goodsegmidx[0, 1]:goodsegmidx[(goodsegmidx.shape[0]), 1]
     # print(goodsegmix2)
-    pointsidx = pointsidx[goodsegmidx[:, 1], :]
-    # print(pointsidx)
-    # print(pointsidx)
+
+    '''
+    print('1a condicao')
+    print(segmlen >= thersholds.seg_min_length)
+    print('2a condicao')
+    print((pointsidx[:, 1] - pointsidx[:, 0]) >= thersholds.min_point_seg)
+    print('and')
+    print(
+        np.transpose(segmlen >= thersholds.seg_min_length) & ((pointsidx[:, 1] - pointsidx[:, 0]) >= thersholds.min_point_seg))
+
+    print('goodsegmidx')
+    print(goodsegmidx)
+    '''
+    pointsidx = pointsidx[goodsegmidx[:, 0], :]
+
+    #print(pointsidx)
+
     alpha = np.asmatrix(alpha)
-    alpha = alpha[goodsegmidx[:, 1], 0]
+    alpha = alpha[goodsegmidx[:, 0], 0]
     #r = np.asmatrix(r)
     #print(r)
-    r = r[goodsegmidx[:, 1], 0]
+    r = r[goodsegmidx[:, 0], 0]
     # print(segmends)
-    segmends = segmends[goodsegmidx[:, 1], :]
+    segmends = segmends[goodsegmidx[:, 0], :]
     segmlen = np.transpose(segmlen)
-    segmlen = segmlen[goodsegmidx[:, 1], 0]
+    segmlen = segmlen[goodsegmidx[:, 0], 0]
 
     #print(alpha)
     #print(r)
     # z = np.zeros((alpha.shape[0] - 1, r.shape[0] - 1))
     z = np.transpose(np.hstack((alpha, r))) #mudei para hstack
-    print(z)
+
 
     R_seg = np.zeros((1, 1, len([len(alpha), 1]) - 1))
 
@@ -506,15 +520,14 @@ if __name__ == '__main__':
         # i += 1
     
     scan_m = np.zeros((2, i))
-    dist = np.zeros((i, 1))
-    thetas = np.zeros((i, 1))
+
 
     thresholds = Thresholds()
 
     #print(seg_intersect(P11,P12,P21,P22))
 
     # hz = np.zeros((2, 1))
-    while time <= 0:
+    while time <= 64:
         time += DT
         j = 0
 
@@ -526,8 +539,9 @@ if __name__ == '__main__':
         xDR_plot = np.hstack((xDR_plot, xDR))
         xTrue_plot = np.hstack((xTrue_plot, xTrue))
         # scan_point = laser_model(xTrue)
-        
-        
+
+        dist = np.zeros((i, 1))
+        thetas = np.zeros((i, 1))
         # simulaçao
         plt.cla()
 
@@ -559,6 +573,7 @@ if __name__ == '__main__':
             
             # print(rang)
         f = 0
+
         for k in range(0, scan_m.shape[1]):
             dist[f] = scan_m[0, k]
             thetas[f] = scan_m[1, k]
@@ -580,7 +595,14 @@ if __name__ == '__main__':
         z, R, asase = extractlines(thetas, dist, thresholds)
 
         #print(z)
-        
+        for monkey in range (0, asase.shape[0]):
+            asase = np.array(asase)
+            point1 = [asase[monkey,0], asase[monkey,1]]
+            point2 = [asase[monkey,2], asase[monkey,3]]
+            x_values = [point1[0], point2[0]]
+            y_values = [point1[1], point2[1]]
+            plt.axis([-3.5, 3.5, -3.5, 3.5])
+            plt.plot(x_values, y_values, '#e10600')
     
         #plot_covariance_ellipse(xEst, EEst)
         
@@ -589,5 +611,7 @@ if __name__ == '__main__':
         plt.grid(True)
         plt.pause(0.001)
 
-       
 
+
+
+       # plt.show()
