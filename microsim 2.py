@@ -6,6 +6,7 @@ import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 import cv2 as cv
+import scipy.linalg
 
 """
 x1 = np.linspace(-3, 3, 100)
@@ -421,12 +422,12 @@ def extractlines(theta, rho, thersholds):
 
 
     R_seg = np.zeros((2, 2, alpha.shape[0]))
-    '''
     for coco in range(0,alpha.shape[0]):
         for j in range(0,2):
-                R_seg[j,j,coco] = 1
-    '''
-    R_seg = 0.1*np.identity(2)
+                R_seg[j,j,coco] = 0.1
+
+
+    #R_seg = 0.1*np.identity(2)
 
     return z, R_seg, segmends
 
@@ -486,13 +487,12 @@ def matching(x, P, Z, R_seg, M, g):
             #print(H[:, :, aux_nmap + (aux_nme) * n_map].shape)
 
             #linha com R multidimensional !!
-            #W = H[:, :, aux_nmap + (aux_nme) * n_map] @ P @ np.transpose(H[:, :, aux_nmap + (aux_nme) * n_map]) + R_seg[:, :, aux_nme]
+            W = H[:, :, aux_nmap + (aux_nme) * n_map] @ P @ np.transpose(H[:, :, aux_nmap + (aux_nme) * n_map]) + R_seg[:, :, aux_nme]
 
-            W = H[:, :, aux_nmap + (aux_nme) * n_map] @ P @ np.transpose(H[:, :, aux_nmap + (aux_nme) * n_map]) + R_seg
+            #W = H[:, :, aux_nmap + (aux_nme) * n_map] @ P @ np.transpose(H[:, :, aux_nmap + (aux_nme) * n_map]) + R_seg
 
             #Mahalanahobis distance
             d[aux_nme, aux_nmap] = np.transpose(v[:, aux_nmap + (aux_nme) * n_map]) * np.linalg.inv(W) * v[:, aux_nmap + (aux_nme) * n_map]
-
 
 
     minima, mapidx = (np.transpose(d)).min(0), (np.transpose(d)).argmin(0)
@@ -509,24 +509,16 @@ def matching(x, P, Z, R_seg, M, g):
 
     v = v[:, seletorl]
     H = H[:, :, seletorl]
-    print('H')
-    print(H[:,:,1])
+
     #print(np.reshape(H, (H.shape[0]*H.shape[2],3), 'F'))
-
-    Hreshape = np.zeros((H.shape[0]*H.shape[2],3))
-    cenoura = 0
-    for batata in range(0,H.shape[2]):
-        Hreshape[cenoura, :] = H[0, :, batata]
-        Hreshape[cenoura+1, :] = H[1, :, batata]
-        cenoura=cenoura+2
-
-    print('H batatas e cenouras')
-    print(Hreshape)
-
-        #print(np.reshape(v, (v.shape[0]*v.shape[1],1), 'F'))
-
+    #print(np.reshape(v, (v.shape[0]*v.shape[1],1), 'F'))
 
     #R_seg = R_seg[:, :, measursidx]
+
+    R_seg1 = R_seg[:,:,0]
+    for bruh in range(1,R_seg.shape[2]):
+        R_seg1 = scipy.linalg.block_diag(R_seg1,R_seg[:,:,bruh])
+
 
     return v, H, R_seg
 
