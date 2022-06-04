@@ -602,7 +602,7 @@ if __name__ == '__main__':
             x_values = [point1[0], point2[0]]
             y_values = [point1[1], point2[1]]
             plt.axis([-3.5, 3.5, -3.5, 3.5])
-            plt.plot(x_values, y_values, '#e10600')
+            plt.plot(x_values, y_values, '#03adfc')
     
         #plot_covariance_ellipse(xEst, EEst)
         
