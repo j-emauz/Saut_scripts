@@ -43,7 +43,7 @@ X5 = [P51[0], P52[0]]
 Y5 = [P51[1], P52[1]]
 
 INPUT_NOISE = np.diag([0.01, np.deg2rad(0.5)])  # ** 2
-SIM_TIME = 0
+SIM_TIME = 62.6
 DT = 0.1
 
 R = np.diag([
@@ -94,25 +94,6 @@ def observation(xTrue, xDR, u):
 
     return xTrue, xDR, ud
 
-"""
-def perp( a ) :
-    b = np.empty_like(a)
-    b[0] = -a[1]
-    b[1] = a[0]
-    return b
-
-def seg_intersect(a1,a2, b1,b2) :
-    da = a2-a1
-    db = b2-b1
-    dp = a1-b1
-    dap = perp(da)
-    denom = np.dot( dap, db)
-    num = np.dot( dap, dp )
-    if denom.astype(float) == 0:                          # lines are parallel
-        return float('inf'), float('inf')
-    return (num / denom.astype(float))*db + b1
-"""
-
 def ccw(A,B,C):
     return (C[1]-A[1]) * (B[0]-A[0]) > (B[1]-A[1]) * (C[0]-A[0])
 # Return true if line segments AB and CD intersect
@@ -121,18 +102,18 @@ def intersect(A,B,C,D):
 
 def get_intersect(p11, p12, p21, p22):
     """ 
-    Returns the point of intersection of the lines passing through p12,p11 and p22,p21.
-    p11: [x, y] a point on the first line
-    p12: [x, y] another point on the first line
-    p21: [x, y] a point on the second line
-    p22: [x, y] another point on the second line
+    Retorna o ponto de intercecao de retas a passar por p12,p11 e p22,p21.
+    p11: [x, y] ponto na primeira retas
+    p12: [x, y] outro ponto da primeira reta
+    p21: [x, y] ponto da segunda reta
+    p22: [x, y] outro ponto da segunda reta
     """
-    s = np.vstack([p11,p12,p21,p22])        # s for stacked
-    h = np.hstack((s, np.ones((4, 1)))) # h for homogeneous
-    l1 = np.cross(h[0], h[1])           # get first line
-    l2 = np.cross(h[2], h[3])           # get second line
-    x, y, z = np.cross(l1, l2)          # point of intersection
-    if z == 0:                          # lines are parallel
+    s = np.vstack([p11,p12,p21,p22])        # s de stack
+    h = np.hstack((s, np.ones((4, 1)))) # homogeneo
+    l1 = np.cross(h[0], h[1])           # obter primeira linha
+    l2 = np.cross(h[2], h[3])           # obter segunda linha
+    x, y, z = np.cross(l1, l2)          # ponto de interceçao
+    if z == 0:                          # se linhas sao paralelas
         return float('inf'), float('inf')
     return x / z, y / z
 
@@ -177,56 +158,6 @@ def laser_model(x_true, tl):
     r = r + r_error
     # laser_scan = laser_scan + (r_error*math.cos(tl), r_error*math.sin(tl))
     return laser_scan, r, r_error
-
-"""
-Codigo para parte de extract lines 
-
-
-#funcoes para extract lines com dados do lazer
-def pol2cart(theta, rho):
-    x = rho * np.cos(theta)
-    y = rho * np.sin(theta)
-    return(x, y)
-
-def splitlines(xy, startidx, endidx, thersholds)
-    return(alpha, r, idx)
-
-def mergecolinear(xy, alpha, r, pointsidx, thersholds):
-    return(alphaout, rout, pointsidxout)
-
-#substituir theta e rho pelos dados do lazer
-def extractlines(theta, rho, thersholds):
-    #passa de coordenadas polares para cartesianas
-    xy = np.zeros((1,0))
-    xy = pol2cart(theta, rho)
-
-    #faz a extracao das linhas
-    alpha, r, pointsidx = splitlines(xy, 0, len(XY, 1), thersholds)
-
-    #numero de segmentos de reta, caso seja mais do que um segmento, vereifica se sao colineares
-    n= len(r)
-    if n>1:
-        alpha, r, pointidx = mergecolinear(xy, alpha, r, pointsidx, thersholds)
-        n= len(r)
-        #atualiza o numero de segmentos
-
-    #definir coordenads dos endpoints e len dos segmentos
-    segmends = np.zeros(n-1, 3)
-    segmlen = np.zeros(n-1, 0)
-
-    for l in range(0, n-1):
-        segmends[l, :] =
-        segmlen[l] = math.sqrt((segmends((l,0)) - segmends((l,2)))**2 + (segmends((l,1)) - segmends((l,3)))**2)
-
-    #remover segmentos demasiados pequenos ???
-
-    #definiçao de z, R
-    z = np.zeros((len(alpha)-1, len(r)-1))
-    z = ([[alpha],[r]])
-    
-    return z, r, segmends
-    
-"""
 
 # Split and merge funçoes
 
@@ -527,7 +458,7 @@ if __name__ == '__main__':
     #print(seg_intersect(P11,P12,P21,P22))
 
     # hz = np.zeros((2, 1))
-    while time <= 64:
+    while time <= SIM_TIME:
         time += DT
         j = 0
 
@@ -610,8 +541,9 @@ if __name__ == '__main__':
         plt.axis([-3.5, 3.5, -3.5, 3.5])
         plt.grid(True)
         plt.pause(0.001)
+        print(time)
 
 
 
 
-       # plt.show()
+    plt.show()
