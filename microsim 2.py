@@ -494,33 +494,37 @@ def matching(x, P, Z, R_seg, M, g):
             d[aux_nme, aux_nmap] = np.transpose(v[:, aux_nmap + (aux_nme) * n_map]) * np.linalg.inv(W) * v[:, aux_nmap + (aux_nme) * n_map]
 
 
-    print('-----------------------------------------------------')
-
-    print('d')
-    print(d)
 
     minima, mapidx = (np.transpose(d)).min(0), (np.transpose(d)).argmin(0)
 
-    print('minima')
-    print(minima)
-    print('mapidx')
-    print(mapidx)
-
     measursidx = np.argwhere(minima < g**2)
-    mapidx = mapidx[measursidx]
 
-    print('v')
-    print(v.shape)
-    print(v)
-    v = v[:, mapidx + (measursidx-1)* n_map]
-    print('mapidx + (measursidx-1)* n_map')
-    print(mapidx + (measursidx-1)* n_map)
 
-    print('v')
-    print(v.shape)
-    print(v)
+    mapidx = mapidx[np.transpose(measursidx)]
 
-    H =  H[:, :,  mapidx + (measursidx -1)* n_map]
+    seletor = (mapidx + (np.transpose(measursidx))* n_map)
+    seletorl =[]
+    for fofo in range(0,seletor.shape[1]):
+        seletorl.append(seletor.item(fofo))
+
+    v = v[:, seletorl]
+    H = H[:, :, seletorl]
+    print('H')
+    print(H[:,:,1])
+    #print(np.reshape(H, (H.shape[0]*H.shape[2],3), 'F'))
+
+    Hreshape = np.zeros((H.shape[0]*H.shape[2],3))
+    cenoura = 0
+    for batata in range(0,H.shape[2]):
+        Hreshape[cenoura, :] = H[0, :, batata]
+        Hreshape[cenoura+1, :] = H[1, :, batata]
+        cenoura=cenoura+2
+
+    print('H batatas e cenouras')
+    print(Hreshape)
+
+        #print(np.reshape(v, (v.shape[0]*v.shape[1],1), 'F'))
+
 
     #R_seg = R_seg[:, :, measursidx]
 
