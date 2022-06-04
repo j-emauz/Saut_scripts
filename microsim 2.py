@@ -451,6 +451,32 @@ def updatemat(x, m):
     return h, Hxmat
 
 
+def matching (x, P, Z, R_seg, M, g):
+    #Z: observations measurements
+    n_measurs = Z.shape[1]
+    n_map = M.shape[1]
+
+    d = np.zeros((n_measurs, n_map))
+    v = np.zeros((2, n_measurs * n_map))
+    H = np.zeros((2, 3, n_measurs * n_map ))
+
+    for aux_nme in range(0, n_measurs):
+        for aux_nmap in range(0, n_map):
+            Z_predict, H[:, :, aux_nmap + (aux_nme -1) * n_map] = updatemat(x, M[:, n_map])
+            v[:, aux_nmap + (aux_nme -1) * n_map] = Z[:, aux_nme] - Z_predict
+            W = H[:, :, aux_nmap + (aux_nme -1) * n_map] * P * np.transpose(H[:, :, aux_nmap + (aux_nme -1) * n_map]) + R_seg[:, :, aux_nme]
+            d[aux_nme, aux_nmap] = np.transpose(v[:, aux_nmap + (aux_nme -1) * n_map]) * np.linalg.inv(W) * v[:, aux_nmap + (aux_nme -1) * n_map]
+
+    minima, mapidx = (np.transpose(d)).min(0),(np.transpose(d)).argmin(0)
+    measursidx = np.argwhere(minima < g**2)
+    mapidx = mapidx(measursidx)
+
+    v = v[:, mapidx + (measursidx -1)* n_map]
+    H =  H[:, :,  mapidx + (measursidx -1)* n_map]
+    R_seg = R_seg[:, :, measursidx]
+    return v, H, R_seg
+
+
 if __name__ == '__main__':
     v = 0.1
     omega = 0.1
@@ -481,19 +507,14 @@ if __name__ == '__main__':
     scan_m = np.zeros((2, i))
 
     thresholds = Thresholds()
+    g=1
 
     # print(seg_intersect(P11,P12,P21,P22))
-
+    #Mapa fixo (retangulo)
     mapa = np.array([[0, pi / 2, pi, -pi / 2, -pi / 4], [3, 3, 3, 3, 2.5 / (math.sqrt(2) * 2)]])
-    h, Hxmat = updatemat(xDR, mapa[:, 0])
-
-    print('h')
-    print(h)
-    print('Hxmat')
-    print(Hxmat)
 
     # hz = np.zeros((2, 1))
-    while time <= SIM_TIME:
+    while time <= 0:
         time += DT
         j = 0
 
@@ -557,14 +578,15 @@ if __name__ == '__main__':
         # print("thetas")
         # print(thetas)
 
-        z, R, asase = extractlines(thetas, dist, thresholds)
+        z, Q, segends = extractlines(thetas, dist, thresholds)
+        v, H, Q = matching(xEst, EEst, z, Q, mapa, g)
 
-        print(z[1])
+        # print(z[1])
         # print(z)
-        for monkey in range(0, asase.shape[0]):
-            asase = np.array(asase)
-            point1 = [asase[monkey, 0], asase[monkey, 1]]
-            point2 = [asase[monkey, 2], asase[monkey, 3]]
+        for monkey in range(0, segends.shape[0]):
+            segends = np.array(segends)
+            point1 = [segends[monkey, 0], segends[monkey, 1]]
+            point2 = [segends[monkey, 2], segends[monkey, 3]]
             x_values = [point1[0], point2[0]]
             y_values = [point1[1], point2[1]]
             plt.axis([-3.5, 3.5, -3.5, 3.5])
