@@ -417,8 +417,16 @@ def extractlines(theta, rho, thersholds):
     # print(r)
     # z = np.zeros((alpha.shape[0] - 1, r.shape[0] - 1))
     z = np.transpose(np.hstack((alpha, r)))  # mudei para hstack
+    #z = np.asarray(z)
 
-    R_seg = np.zeros((1, 1, len([len(alpha), 1]) - 1))
+
+    R_seg = np.zeros((2, 2, alpha.shape[0]))
+    '''
+    for coco in range(0,alpha.shape[0]):
+        for j in range(0,2):
+                R_seg[j,j,coco] = 1
+    '''
+    R_seg = 0.1*np.identity(2)
 
     return z, R_seg, segmends
 
@@ -451,29 +459,71 @@ def updatemat(x, m):
     return h, Hxmat
 
 
-def matching (x, P, Z, R_seg, M, g):
+def matching(x, P, Z, R_seg, M, g):
     #Z: observations measurements
     n_measurs = Z.shape[1]
     n_map = M.shape[1]
+
+    print('n_map')
+    print(n_map)
 
     d = np.zeros((n_measurs, n_map))
     v = np.zeros((2, n_measurs * n_map))
     H = np.zeros((2, 3, n_measurs * n_map ))
 
+    v = np.asmatrix(v)
+
+
     for aux_nme in range(0, n_measurs):
         for aux_nmap in range(0, n_map):
-            Z_predict, H[:, :, aux_nmap + (aux_nme -1) * n_map] = updatemat(x, M[:, n_map])
-            v[:, aux_nmap + (aux_nme -1) * n_map] = Z[:, aux_nme] - Z_predict
-            W = H[:, :, aux_nmap + (aux_nme -1) * n_map] * P * np.transpose(H[:, :, aux_nmap + (aux_nme -1) * n_map]) + R_seg[:, :, aux_nme]
-            d[aux_nme, aux_nmap] = np.transpose(v[:, aux_nmap + (aux_nme -1) * n_map]) * np.linalg.inv(W) * v[:, aux_nmap + (aux_nme -1) * n_map]
+            Z_predict, H[:, :, aux_nmap + (aux_nme) * n_map] = updatemat(x, M[:, aux_nmap])
+            #print(Z_predict.shape)
+            #print(Z[:, aux_nme].shape)
+            #print(v[:, aux_nmap + (aux_nme) * n_map].shape)
+            v[:, aux_nmap + (aux_nme) * n_map] = Z[:, aux_nme] - Z_predict
+            #print(P.shape)
+            #print(np.transpose(H[:, :, aux_nmap + (aux_nme) * n_map]).shape)
+            #print(H[:, :, aux_nmap + (aux_nme) * n_map].shape)
 
-    minima, mapidx = (np.transpose(d)).min(0),(np.transpose(d)).argmin(0)
+            #linha com R multidimensional !!
+            #W = H[:, :, aux_nmap + (aux_nme) * n_map] @ P @ np.transpose(H[:, :, aux_nmap + (aux_nme) * n_map]) + R_seg[:, :, aux_nme]
+
+            W = H[:, :, aux_nmap + (aux_nme) * n_map] @ P @ np.transpose(H[:, :, aux_nmap + (aux_nme) * n_map]) + R_seg
+
+            #Mahalanahobis distance
+            d[aux_nme, aux_nmap] = np.transpose(v[:, aux_nmap + (aux_nme) * n_map]) * np.linalg.inv(W) * v[:, aux_nmap + (aux_nme) * n_map]
+
+
+    print('-----------------------------------------------------')
+
+    print('d')
+    print(d)
+
+    minima, mapidx = (np.transpose(d)).min(0), (np.transpose(d)).argmin(0)
+
+    print('minima')
+    print(minima)
+    print('mapidx')
+    print(mapidx)
+
     measursidx = np.argwhere(minima < g**2)
-    mapidx = mapidx(measursidx)
+    mapidx = mapidx[measursidx]
 
-    v = v[:, mapidx + (measursidx -1)* n_map]
+    print('v')
+    print(v.shape)
+    print(v)
+    v = v[:, mapidx + (measursidx-1)* n_map]
+    print('mapidx + (measursidx-1)* n_map')
+    print(mapidx + (measursidx-1)* n_map)
+
+    print('v')
+    print(v.shape)
+    print(v)
+
     H =  H[:, :,  mapidx + (measursidx -1)* n_map]
-    R_seg = R_seg[:, :, measursidx]
+
+    #R_seg = R_seg[:, :, measursidx]
+
     return v, H, R_seg
 
 
@@ -580,6 +630,8 @@ if __name__ == '__main__':
 
         z, Q, segends = extractlines(thetas, dist, thresholds)
         v, H, Q = matching(xEst, EEst, z, Q, mapa, g)
+
+
 
         # print(z[1])
         # print(z)
