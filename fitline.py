@@ -184,7 +184,7 @@ def extractlines(theta, rho, thersholds):
     xy = np.vstack((x,y))
     #xy = np.concatenate((x,y),axis=0)
     xy = np.asmatrix(xy)
-    print(xy)
+    #print(xy)
 
     startidx =0
     endidx = xy.shape[1] -1 #x e y são vetores linha
@@ -273,8 +273,8 @@ if __name__ == '__main__':
 
     theta = np.matrix([[-40*pi/180], [-20*pi/180], [0*pi/180], [20*pi/180], [40*pi/180]])
     rho = np.matrix([[1/math.cos(-40*(pi/180))], [1/math.cos(-20*(pi/180))], [1], [1/math.cos(20*(pi/180))], [1/math.cos(40*(pi/180))]])
-    print(theta)
-    print(rho)
+    #print(theta)
+    #print(rho)
     z, R_seg, segmends = extractlines(theta, rho, thresholds)
     """
     print(alphav)
