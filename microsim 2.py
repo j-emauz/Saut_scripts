@@ -49,7 +49,7 @@ DT = 0.1
 R = np.diag([
     0.1,  # variance of location on x-axis
     0.1,  # variance of location on y-axis
-    np.deg2rad(1.0),  # variance of yaw angle
+    np.deg2rad(1.0),  # variance of theta
 ]) ** 2  # predict state covariance
 
 
@@ -525,6 +525,7 @@ if __name__ == '__main__':
 
         z, R, asase = extractlines(thetas, dist, thresholds)
 
+        print(z[1])
         #print(z)
         for monkey in range (0, asase.shape[0]):
             asase = np.array(asase)
@@ -541,7 +542,7 @@ if __name__ == '__main__':
         plt.axis([-3.5, 3.5, -3.5, 3.5])
         plt.grid(True)
         plt.pause(0.001)
-        print(time)
+        # print(time)
 
 
 
