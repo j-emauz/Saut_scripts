@@ -37,7 +37,7 @@ P42 = np.array([3, 3])
 X4 = [P41[0], P42[0]]
 Y4 = [P41[1], P42[1]]
 # linha la po meio
-P51 = np.array([1, -2.5])
+P51 = np.array([0, -2.5])
 P52 = np.array([2.5, 0])
 X5 = [P51[0], P52[0]]
 Y5 = [P51[1], P52[1]]
