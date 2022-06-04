@@ -347,7 +347,7 @@ if __name__ == '__main__':
         plt.axis([-3.5, 3.5, -3.5, 3.5])
         plt.grid(True)
         plt.pause(0.001)
-
+        print(time)
 
 
 
