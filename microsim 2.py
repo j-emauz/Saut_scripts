@@ -43,14 +43,14 @@ P52 = np.array([2.5, 0])
 X5 = [P51[0], P52[0]]
 Y5 = [P51[1], P52[1]]
 
-INPUT_NOISE = np.diag([0.01, np.deg2rad(0.5)])  # ** 2
+INPUT_NOISE = np.diag([0.1, np.deg2rad(0.5)]) ** 2
 SIM_TIME = 62.6
 DT = 0.1
 
 R = np.diag([
     0.1,  # variance of location on x-axis
     0.1,  # variance of location on y-axis
-    np.deg2rad(1.0),  # variance of theta
+    np.deg2rad(0.5),  # variance of theta
 ]) ** 2  # predict state covariance
 
 
@@ -170,7 +170,7 @@ class Thresholds:
     def __init__(self):
         self.seg_min_length = 0.01
         self.point_dist = 0.05
-        self.min_point_seg = 5
+        self.min_point_seg = 10
 
 
 def fitline(pontos):
@@ -423,8 +423,10 @@ def extractlines(theta, rho, thersholds):
 
     R_seg = np.zeros((2, 2, alpha.shape[0]))
     for coco in range(0,alpha.shape[0]):
+        #R_seg[0, 0, coco] = 0.01
+        #R_seg[1, 1, coco] = 0.1
         for j in range(0,2):
-                R_seg[j,j,coco] = 0.5
+            R_seg[j,j,coco] = 0.5
 
 
     #R_seg = 0.1*np.identity(2)
@@ -450,7 +452,7 @@ def normalizelineparameters(alpha, r):
 
 
 def updatemat(x, m):
-    h = np.array([[m[0] - x[2,0]], [m[1] - (x[0,0] * math.cos(m[0] + x[1,0] * math.sin(m[0])))]])
+    h = np.array([[m[0] - x[2,0]], [m[1] - (x[0,0] * math.cos(m[0]) + x[1,0] * math.sin(m[0]))]])
     Hxmat = np.array([[0, 0, -1], [-math.cos(m[0]), -math.sin(m[0]), 0]])
 
     [h[0], h[1], isdistneg] = normalizelineparameters(h[0], h[1])
@@ -498,6 +500,8 @@ def matching(x, P, Z, R_seg, M, g):
 
     measursidx = np.argwhere(minima < g**2)
 
+    print('measuridx')
+    print(measursidx)
 
     mapidx = mapidx[np.transpose(measursidx)]
     print('mapidx')
@@ -596,14 +600,16 @@ if __name__ == '__main__':
     scan_m = np.zeros((2, i))
 
     thresholds = Thresholds()
-    g=1
+    g = 0.15 #Threshold do matching
 
     # print(seg_intersect(P11,P12,P21,P22))
     #Mapa fixo (retangulo)
-    mapa = np.array([[0, pi / 2, pi, -pi / 2, -pi / 4], [3, 3, 3, 3, 2.5 / (math.sqrt(2) * 2)]])
+    mapa = np.array([[0, pi / 2, pi, -pi / 2, -pi / 4], [3, 3, 3, 3, 2.5*(math.sqrt(2))/2]])
 
     # hz = np.zeros((2, 1))
     while time <= SIM_TIME:
+        plt.cla()
+
         time += DT
         j = 0
         dist = np.zeros((i, 1))
@@ -650,8 +656,6 @@ if __name__ == '__main__':
 
         xEst, EEst = step_update(xEst, EEst, z, Q, mapa, g)
 
-        print(xTrue-xEst)
-
         xEst = np.asarray(xEst)
         # fazer historico de dados (para plot)
         xEst_plot = np.hstack((xEst_plot, xEst))
@@ -663,7 +667,7 @@ if __name__ == '__main__':
 
 
         # simulaçao
-        plt.cla()
+
 
         # for stopping simulation with the esc key.
         plt.gcf().canvas.mpl_connect('key_release_event',
@@ -678,7 +682,9 @@ if __name__ == '__main__':
                  xEst_plot[1, :].flatten(), "-r")
 
         # print(z[1])
-        # print(z)
+        print('z dentro do while main')
+        print(z[0]*(180/pi))
+        print(z[1])
         '''
         for monkey in range(0, segends.shape[0]):
             segends = np.array(segends)
