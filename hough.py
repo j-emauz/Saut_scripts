@@ -19,10 +19,11 @@ def main(argv):
         return -1
 
 
-    dst = cv.Canny(src, 50, 200, None, 3)
+    dst = cv.Canny(src, 50, 300, None, 3)
 
     # Copy edges to the images that will display the results in BGR
-    cdst = cv.cvtColor(dst, cv.COLOR_GRAY2BGR)
+    #cdst = cv.cvtColor(dst, cv.COLOR_GRAY2BGR)
+    cdst = cv.cvtColor(src, cv.COLOR_GRAY2BGR)
     cdstP = np.copy(cdst)
 
     lines = cv.HoughLines(dst, 1, np.pi / 180, 150, None, 0, 0)
@@ -39,8 +40,9 @@ def main(argv):
             pt2 = (int(x0 - 1000*(-b)), int(y0 - 1000*(a)))
             cv.line(cdst, pt1, pt2, (0,0,255), 3, cv.LINE_AA)
 
-
-    linesP = cv.HoughLinesP(dst, 1, np.pi / 180, 50, None, 50, 10)
+    #Parâmetros a mudar:
+    #(ver: https://docs.opencv.org/3.4/d9/db0/tutorial_hough_lines.html)
+    linesP = cv.HoughLinesP(dst, 1, np.pi / 180, 22, None, 20, 10)
 
     if linesP is not None:
         for i in range(0, len(linesP)):
@@ -48,6 +50,7 @@ def main(argv):
             cv.line(cdstP, (l[0], l[1]), (l[2], l[3]), (0,0,255), 3, cv.LINE_AA)
 
     cv.imshow("Source", src)
+    #cv.imshow("Source", dst)
     cv.imshow("Detected Lines (in red) - Standard Hough Line Transform", cdst)
     cv.imshow("Detected Lines (in red) - Probabilistic Line Transform", cdstP)
 
