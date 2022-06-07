@@ -18,30 +18,32 @@ x2 = -3 + 0 * y3
 x3 = 3 + 0 * y3
 """
 # linha de baixo
-P11 = np.array([-3, -3])
-P12 = np.array([3, -3])
+P11 = np.array([-2, -3])
+P12 = np.array([-2, 5])
 X1 = [P11[0], P12[0]]
 Y1 = [P11[1], P12[1]]
 # linha de cima
-P21 = np.array([-3, 3])
-P22 = np.array([3, 3])
+P21 = np.array([-2, 5])
+P22 = np.array([-6, 5])
 X2 = [P21[0], P22[0]]
 Y2 = [P21[1], P22[1]]
 # linha da esquerda
-P31 = np.array([-3, -3])
-P32 = np.array([-3, 3])
+P31 = np.array([-2, 8])
+P32 = np.array([-6, 8])
 X3 = [P31[0], P32[0]]
 Y3 = [P31[1], P32[1]]
 # linha da direita
-P41 = np.array([3, -3])
-P42 = np.array([3, 3])
+P41 = np.array([-2, 8])
+P42 = np.array([-2, 10])
 X4 = [P41[0], P42[0]]
 Y4 = [P41[1], P42[1]]
 # linha la po meio
-P51 = np.array([0, -2.5])
-P52 = np.array([2.5, 0])
+P51 = np.array([2, 10])
+P52 = np.array([2, 0])
 X5 = [P51[0], P52[0]]
 Y5 = [P51[1], P52[1]]
+
+
 
 INPUT_NOISE = np.diag([0.1, np.deg2rad(0.5)]) ** 2
 SIM_TIME = 62.8
@@ -573,26 +575,28 @@ def step_update(x_pred, E_pred,  Z, R_seg, mapa, g):
 if __name__ == '__main__':
     v = 0.1
     omega = 0.1
-    u = np.array([[v * DT], [omega * DT]])
+
 
     time = 0.0
     i = 0
 
     # vetor de estado [x y theta]
     xTrue = np.zeros((3, 1))
-    xPr = np.zeros((3, 1))
+    xTrue[2] = pi/2
+    #xPr = np.zeros((3, 1))
     xDR = xTrue
-    xPred = np.zeros((3, 1))
+    #xPred = np.zeros((3, 1))
     xEst = xTrue
 
     EEst = np.eye(3)
 
     # anteriores
-    xPr_plot = xPr
+    #xPr_plot = xPr
     xDR_plot = xDR
-    xPred_plot = xPred
+    #xPred_plot = xPred
     xEst_plot = xEst
     xTrue_plot = xTrue
+    tempao = 0
 
     i = len(np.arange(-2.356194496154785, 2.0923497676849365, 0.05))
     # i += 1
@@ -604,17 +608,23 @@ if __name__ == '__main__':
 
     # print(seg_intersect(P11,P12,P21,P22))
     #Mapa fixo (retangulo)
-    mapa = np.array([[0, pi / 2, pi, -pi / 2, -pi / 4], [3, 3, 3, 3, 2.5*(math.sqrt(2))/2]])
+    mapa = np.array([[pi, 0, pi/2, pi/2], [2, 2, 5, 8]])
 
     # hz = np.zeros((2, 1))
-    while time <= SIM_TIME:
+    while time <= 150:
         plt.cla()
+        tempao += 1
+        if tempao == 40:
+            omega = -omega
+            tempao = 0
 
+        u = np.array([[v * DT], [omega * DT]])
         time += DT
         j = 0
         dist = np.zeros((i, 1))
         thetas = np.zeros((i, 1))
         xTrue, xDR, ud = observation(xTrue, xDR, u)
+
         xEst, EEst = ekf_estimation(xEst, EEst, ud)
         for tl in np.arange(-2.356194496154785, 2.0923497676849365, 0.05):
             scan_point, rang, rang_error = laser_model(xTrue, tl)
@@ -698,8 +708,8 @@ if __name__ == '__main__':
         """
         # plot_covariance_ellipse(xEst, EEst)
 
-        # plt.axis("equal")
-        plt.axis([-3.5, 3.5, -3.5, 3.5])
+        plt.axis("equal")
+        #plt.axis([-3.5, 3.5, -3.5, 3.5])
         plt.grid(True)
         plt.pause(0.001)
         # print(time)
