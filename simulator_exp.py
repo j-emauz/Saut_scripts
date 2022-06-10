@@ -496,6 +496,12 @@ def extractlines(theta, rho, thersholds):
 
 
 def normalizelineparameters(alpha, r):
+    """
+    Normaliza os parametros dos segm para r<0 e para alpha > pi ou <-pi
+
+    Rebece: alpha e r de todos os segm
+    Retorna: alpha e r de todos os segm normalizados, isRNegated(1 caso r fosse negativo, 0 caso contrário)
+    """
     if r < 0:
         alpha = alpha + pi
         r = -r
@@ -512,6 +518,12 @@ def normalizelineparameters(alpha, r):
 
 
 def updatemat(x, m):
+    """
+    Calcula a função e a respetiva matriz jacobiana associadas ao update step
+
+    Rebece: x, m
+    Retorna: h, Hxmat
+    """
     h = np.array([[m[0] - x[2,0]], [m[1] - (x[0,0] * math.cos(m[0]) + x[1,0] * math.sin(m[0]))]])
     Hxmat = np.array([[0, 0, -1], [-math.cos(m[0]), -math.sin(m[0]), 0]])
 
@@ -524,6 +536,13 @@ def updatemat(x, m):
 
 
 def matching(x, P, Z, R_seg, M, g):
+    """
+    Faz o matching entre as linhas obsrvadas no mapa(M) e os segmentos obtidos pelas observações do lazer
+
+    Rebece: x, P, Z, R_seg, M, g
+    Chama a função: updatemat
+    Retorna: v, H, R_seg correspontes apenas ao segmentos onde ocorreu matching
+    """
     #Z: observations measurements
     n_measurs = Z.shape[1]
     n_map = M.shape[1]
@@ -534,7 +553,6 @@ def matching(x, P, Z, R_seg, M, g):
     H = np.zeros((2, 3, n_measurs * n_map ))
 
     v = np.asmatrix(v)
-
 
     for aux_nme in range(0, n_measurs):
         for aux_nmap in range(0, n_map):
@@ -595,8 +613,10 @@ def matching(x, P, Z, R_seg, M, g):
 
 def step_update(x_pred, E_pred,  Z, R_seg, mapa, g):
     '''
-    Recebe o x_pred e o E_pred ->predicted
-    Chama a função de matching, que irá retorna o v, H e R_seg
+    Calcula o x e E update
+
+    Recebe: x_pred, E_pred, Z, R_seg, mapa, g
+    Chama a função: matching
     Retorna o E_up e o x_up -> updated
     '''
     if Z.shape[1]==0:
