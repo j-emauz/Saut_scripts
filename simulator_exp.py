@@ -652,7 +652,8 @@ def step_update(x_pred, E_pred,  Z, R_seg, mapa, g):
     return x_up, E_up
 
 
-if __name__ == '__main__':
+def main():
+
     v = 0.1
     omega = 0.1
     u = np.array([[v * DT], [omega * DT]])
@@ -682,11 +683,11 @@ if __name__ == '__main__':
     scan_m = np.zeros((2, i))
 
     thresholds = Thresholds()
-    g = 0.15 #Threshold do matching
+    g = 0.15  # Threshold do matching
 
     # print(seg_intersect(P11,P12,P21,P22))
-    #Mapa fixo (retangulo)
-    mapa = np.array([[0, pi / 2, pi, -pi / 2, -pi / 4], [3, 3, 3, 3, 2.5*(math.sqrt(2))/2]])
+    # Mapa fixo (retangulo)
+    mapa = np.array([[0, pi / 2, pi, -pi / 2, -pi / 4], [3, 3, 3, 3, 2.5 * (math.sqrt(2)) / 2]])
 
     # hz = np.zeros((2, 1))
     while time <= SIM_TIME:
@@ -733,8 +734,11 @@ if __name__ == '__main__':
         # print("thetas")
         # print(thetas)
 
+
         z, Q, segends = extractlines(thetas, dist, thresholds)
-        #v, H, Q = matching(xEst, EEst, z, Q, mapa, g)
+        # v, H, Q = matching(xEst, EEst, z, Q, mapa, g)
+
+
 
         xEst, EEst = step_update(xEst, EEst, z, Q, mapa, g)
 
@@ -745,11 +749,7 @@ if __name__ == '__main__':
         xTrue_plot = np.hstack((xTrue_plot, xTrue))
         # scan_point = laser_model(xTrue)
 
-
-
-
         # simulaçao
-
 
         # for stopping simulation with the esc key.
         plt.gcf().canvas.mpl_connect('key_release_event',
@@ -765,7 +765,7 @@ if __name__ == '__main__':
 
         # print(z[1])
         print('z dentro do while main')
-        print(z[0]*(180/pi))
+        print(z[0] * (180 / pi))
         print(z[1])
         '''
         for monkey in range(0, segends.shape[0]):
@@ -786,3 +786,25 @@ if __name__ == '__main__':
         # print(time)
 
     plt.show()
+
+
+
+
+if __name__ == '__main__':
+    main()
+    """
+    import cProfile
+    import pstats
+
+    main()
+
+    with cProfile.Profile() as pr:
+        extractlines()
+
+    stats = pstats.Stats(pr)
+    stats.sort_stats(pstats.SortKey.TIME)
+    stats.dump_stats(filename='needs_profiling.prof')
+    """
+    
+    #snakeviz ./needs_profiling.prof
+    #http://127.0.0.1:8080/snakeviz/C%3A%5CUsers%5Cleono%5COneDrive%5CAmbiente%20de%20Trabalho%5C4%C2%BAano%5C2%C2%BAsemestre%5CSAut%5CSaut_scripts%5Cneeds_profiling.prof
