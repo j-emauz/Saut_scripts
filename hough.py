@@ -46,10 +46,10 @@ def main(argv):
     #(ver: https://docs.opencv.org/3.4/d9/db0/tutorial_hough_lines.html)
     linesP = cv.HoughLinesP(dst, 1, np.pi / 180, 22, None, 20, 10)
     #linesP = cv.HoughLinesP(dst, 1, np.pi / 180, 50, None, 50, 10)
-    linesP[0, 0, :] = [20, 400, 400, 20]
+    #linesP[0, 0, :] = [20, 400, 400, 20]
     #linesP[0, 0, :] = [0, 0, 500, 500]
-    cenas = [0, 1, 2, 3, 11, 12, 13, 14, 15, 25, 33, 34, 37, 44]
-    #cenas = [0, 14]
+    cenas = [1, 2, 3, 11, 12, 13, 14, 15, 25, 33, 34, 37, 44]
+
     if linesP is not None:
         for i in range(0, len(cenas)):
         #for i in range(0, len(linesP)):#len(linesP)):  1,2,3,11,12,13,14,15,25,33,34,37,44 (6,7,8,9,16,17,18,19,20,21,22,23,24,26,27,28,29,30,31,32,35,36,38,39,41,42,43,45,46,47,48 descartar)  (4,5,10 não sabemos ->escolhemos 14)
@@ -66,14 +66,13 @@ def main(argv):
 
 
     linha = linesP[cenas,:,:]
-    print(linha.shape)
     for i in range(0, len(cenas)):
         linha[i,0,1]=linha[i,0,1]-(640-456)
         linha[i,0,0]=-linha[i,0,0]+424
         linha[i, 0, 3] = linha[i, 0, 3] - (640 - 456)
         linha[i, 0, 2] = -linha[i, 0, 2] + 424
 
-    print(linha)
+    #print(linha)
 
     linha_polar=np.zeros((2,len(cenas)))
 
