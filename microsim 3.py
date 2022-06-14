@@ -585,8 +585,11 @@ if __name__ == '__main__':
     xTrue[2] = pi/2
     #xPr = np.zeros((3, 1))
     xDR = xTrue
+    # xDR = np.zeros((3,1))
+    # xDR[0] = -1
+    # xDR[2] = pi/2
     #xPred = np.zeros((3, 1))
-    xEst = xTrue
+    xEst = xDR
 
     EEst = np.eye(3)
 
