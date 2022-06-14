@@ -8,7 +8,7 @@ import cv2 as cv
 import numpy as np
 def main(argv):
 
-    default_file = 'mapa2bom_edit2.pbm'
+    default_file = 'monkeysmol.pgm'
     filename = argv[0] if len(argv) > 0 else default_file
     # Loads an image
     src = cv.imread(cv.samples.findFile(filename), cv.IMREAD_GRAYSCALE)
