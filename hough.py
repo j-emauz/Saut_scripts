@@ -46,24 +46,84 @@ def main(argv):
     #(ver: https://docs.opencv.org/3.4/d9/db0/tutorial_hough_lines.html)
     linesP = cv.HoughLinesP(dst, 1, np.pi / 180, 22, None, 20, 10)
     #linesP = cv.HoughLinesP(dst, 1, np.pi / 180, 50, None, 50, 10)
-
+    linesP[0, 0, :] = [20, 400, 400, 20]
     #linesP[0, 0, :] = [0, 0, 500, 500]
-    cenas = [1, 2, 3, 11, 12, 13, 14, 15, 25, 33, 34, 37, 44]
-    print(len(linesP))
+    cenas = [0, 1, 2, 3, 11, 12, 13, 14, 15, 25, 33, 34, 37, 44]
+    #cenas = [0, 14]
     if linesP is not None:
         for i in range(0, len(cenas)):
         #for i in range(0, len(linesP)):#len(linesP)):  1,2,3,11,12,13,14,15,25,33,34,37,44 (6,7,8,9,16,17,18,19,20,21,22,23,24,26,27,28,29,30,31,32,35,36,38,39,41,42,43,45,46,47,48 descartar)  (4,5,10 não sabemos ->escolhemos 14)
             #l = linesP[i][0]    #linha 40,48 foi a que o João fez mal
+
             l = linesP[cenas[i]][0]
             cv.line(cdstP, (l[0], l[1]), (l[2], l[3]), (0,0,255), 3, cv.LINE_AA)
     #print(cdstP)
+
     cv.imshow("Source", src)
     #cv.imshow("Source", dst)
     #cv.imshow("Detected Lines (in red) - Standard Hough Line Transform", cdst)
     cv.imshow("Detected Lines (in red) - Probabilistic Line Transform", cdstP)
 
+
+    linha = linesP[cenas,:,:]
+    print(linha.shape)
+    for i in range(0, len(cenas)):
+        linha[i,0,1]=linha[i,0,1]-(640-456)
+        linha[i,0,0]=-linha[i,0,0]+424
+        linha[i, 0, 3] = linha[i, 0, 3] - (640 - 456)
+        linha[i, 0, 2] = -linha[i, 0, 2] + 424
+
+    print(linha)
+
+    linha_polar=np.zeros((2,len(cenas)))
+
+    for i in range(0, len(cenas)):
+        xc = (linha[i, 0, 0] + linha[i, 0, 2])/2
+        yc = (linha[i, 0, 1] + linha[i, 0, 3]) / 2
+        lx = [0, 2]
+        ly = [1, 3]
+        dx = np.asmatrix(linha[i, 0, lx] - xc)
+        dy = np.asmatrix(linha[i, 0, ly] - yc)
+
+        num = -2 * np.matrix.sum(np.multiply(dx, dy))
+        denom = np.matrix.sum(np.multiply(dy, dy) - np.multiply(dx, dx))
+        alpha = math.atan2(num, denom) / 2
+
+        r = xc * math.cos(alpha) + yc * math.sin(alpha)
+
+
+
+#    for i in range(0, len(cenas)):
+#        theta_0=math.pi/2
+#        if linha[i, 0, 0] != linha[i, 0, 2]:
+#            theta_0 = math.atan2((linha[i, 0, 3]-linha[i, 0, 1]), (linha[i, 0, 2]-linha[i, 0, 0]))
+#        theta1= math.atan2(linha[i, 0, 1],linha[i, 0, 0])
+#        r1= linha[i, 0, 0]/(math.cos(theta1))
+#
+#        r= r1*math.sin(theta1-theta_0)
+#        alpha=math.pi/2 - theta_0
+
+
+        if r < 0:
+            alpha = alpha + math.pi
+            r = -r
+            isRNegated = 1
+        else:
+            isRNegated = 0
+
+        if alpha > math.pi:
+            alpha = alpha - 2 * math.pi
+        elif alpha < -math.pi:
+            alpha = alpha + 2 * math.pi
+
+        linha_polar[1, i] = r * 0.05  #in meters
+        linha_polar[0, i] = alpha
+
+    print(linha_polar)
+
     cv.waitKey()
     return 0
+
 
 if __name__ == "__main__":
     main(sys.argv[1:])
