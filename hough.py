@@ -47,8 +47,21 @@ def main(argv):
     linesP = cv.HoughLinesP(dst, 1, np.pi / 180, 22, None, 20, 10)
     #linesP = cv.HoughLinesP(dst, 1, np.pi / 180, 50, None, 50, 10)
     #linesP[0, 0, :] = [20, 400, 400, 20]
-    #linesP[0, 0, :] = [0, 0, 500, 500]
-    cenas = [1, 2, 3, 11, 12, 13, 14, 15, 25, 33, 34, 37, 44]
+
+    #cenas = list(range(0, len(linesP)))
+    #conjunto de linhas que selecionámos primeiramente:
+    #cenas = [1, 2, 3, 11, 12, 13, 14, 15, 25, 33, 34, 37, 44]
+
+    #linha que temos dúvidas: 2 -> alterar por: 16, 29 (descartei a 26, 49, 53)
+    #adicionei ainda a 45 que é tipo lá do fundo
+    cenas = [1, 2, 3, 11, 12, 13, 14, 15, 25, 33, 34, 37, 44, 16, 29, 45]
+
+    #as que estou a tirar do conjunto total: 20, 51
+    #cenas = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 52, 53]
+    #cenas = list(range(0,len(linesP)))
+
+
+    
 
     if linesP is not None:
         for i in range(0, len(cenas)):
@@ -67,10 +80,10 @@ def main(argv):
 
     linha = linesP[cenas,:,:]
     for i in range(0, len(cenas)):
-        linha[i,0,1]=linha[i,0,1]-(640-456)
-        linha[i,0,0]=-linha[i,0,0]+424
-        linha[i, 0, 3] = linha[i, 0, 3] - (640 - 456)
-        linha[i, 0, 2] = -linha[i, 0, 2] + 424
+        linha[i, 0, 1]= -linha[i, 0, 1] + (640 - 456)
+        linha[i, 0, 0]= linha[i, 0, 0] - 424
+        linha[i, 0, 3] = -linha[i, 0, 3] + (640 - 456)
+        linha[i, 0, 2] = linha[i, 0, 2] - 424
 
     #print(linha)
 
@@ -101,7 +114,7 @@ def main(argv):
 #
 #        r= r1*math.sin(theta1-theta_0)
 #        alpha=math.pi/2 - theta_0
-
+#        alpha = math.pi - alpha
 
         if r < 0:
             alpha = alpha + math.pi
