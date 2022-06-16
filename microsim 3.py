@@ -50,9 +50,9 @@ SIM_TIME = 62.8
 DT = 0.2
 
 R = np.diag([
-    0.1,  # variance of location on x-axis
-    0.1,  # variance of location on y-axis
-    np.deg2rad(0.5),  # variance of theta
+    0.2,  # variance of location on x-axis
+    0.2,  # variance of location on y-axis
+    np.deg2rad(1),  # variance of theta
 ]) ** 2  # predict state covariance
 
 
@@ -619,9 +619,11 @@ if __name__ == '__main__':
     while time <= 150:
         plt.cla()
         tempao += 1
-        if tempao == 60:
+        
+        if tempao == 30:
             omega = -omega
-            tempao = -80
+            tempao = -30
+
 
         u = np.array([[v * DT], [omega * DT]])
         time += DT
