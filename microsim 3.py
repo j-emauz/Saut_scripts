@@ -45,7 +45,7 @@ Y5 = [P51[1], P52[1]]
 
 
 
-INPUT_NOISE = np.diag([0.1, np.deg2rad(0.5)]) ** 2
+INPUT_NOISE = np.diag([0.1, np.deg2rad(5)]) ** 2
 SIM_TIME = 62.8
 DT = 0.2
 
@@ -173,7 +173,7 @@ class Thresholds:
     def __init__(self):
         self.seg_min_length = 0.01
         self.point_dist = 0.05
-        self.min_point_seg = 6
+        self.min_point_seg = 4
 
 
 def fitline(pontos):
@@ -369,13 +369,14 @@ def extractlines(theta, rho, thersholds):
     # for l in range(0, n):
     #    print(np.concatenate([np.transpose(xy[:, pointsidx[l, 0]]), np.transpose(xy[:, pointsidx[l, 1]])], axis = 1))
     pointsidx = np.asmatrix(pointsidx)
-    for l in range(0, n):
-        segmends[l, :] = np.concatenate([np.transpose(xy[:, pointsidx[l, 0]]), np.transpose(xy[:, pointsidx[l, 1]])],
-                                        axis=1)
-        # segmends[l, :] = [np.transpose(xy[:, pointsidx[l, 0]]), np.transpose(xy[:, pointsidx[l, 1]])]
-        # for j in range(0:4):
-        #    segmends[l, j] = [xy[j, pointsidx[l, 0]]]
-        segmlen[l] = math.sqrt((segmends[l, 0] - segmends[l, 2]) ** 2 + (segmends[l, 1] - segmends[l, 3]) ** 2)
+    if pointsidx.shape[0] != 0: #ADICIONAR AOS OUTROS
+        for l in range(0, n):
+            segmends[l, :] = np.concatenate([np.transpose(xy[:, pointsidx[l, 0]]), np.transpose(xy[:, pointsidx[l, 1]])],
+                                            axis=1)
+            # segmends[l, :] = [np.transpose(xy[:, pointsidx[l, 0]]), np.transpose(xy[:, pointsidx[l, 1]])]
+            # for j in range(0:4):
+            #    segmends[l, j] = [xy[j, pointsidx[l, 0]]]
+            segmlen[l] = math.sqrt((segmends[l, 0] - segmends[l, 2]) ** 2 + (segmends[l, 1] - segmends[l, 3]) ** 2)
 
     segmlen = np.transpose(segmlen)
     # print(((pointsidx[:,1] - pointsidx[:,0]) >= thersholds.min_point_seg))
@@ -619,7 +620,7 @@ if __name__ == '__main__':
     while time <= 150:
         plt.cla()
         tempao += 1
-        
+
         if tempao == 30:
             omega = -omega
             tempao = -30
