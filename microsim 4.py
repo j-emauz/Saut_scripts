@@ -17,11 +17,20 @@ y3 = np.linspace(-3, 3, 100)
 x2 = -3 + 0 * y3
 x3 = 3 + 0 * y3
 """
+"""
 # linha vertical esquerda baixo
-P11 = np.array([-2, -3])
+P11 = np.array([-2, -5])
+P12 = np.array([-2, 14])
+X1 = [P11[0], P12[0]]
+Y1 = [P11[1], P12[1]]
+"""
+#COM ZONA TIPO ELEVADOR
+# linha vertical esquerda baixo
+P11 = np.array([-2, -5])
 P12 = np.array([-2, 5])
 X1 = [P11[0], P12[0]]
 Y1 = [P11[1], P12[1]]
+
 # linha horizontal baixo
 P21 = np.array([-2, 5])
 P22 = np.array([-6, 5])
@@ -32,17 +41,38 @@ P31 = np.array([-2, 8])
 P32 = np.array([-6, 8])
 X3 = [P31[0], P32[0]]
 Y3 = [P31[1], P32[1]]
+
 # linha vertical esquerda cima
 P41 = np.array([-2, 8])
-P42 = np.array([-2, 10])
+P42 = np.array([-2, 14])
 X4 = [P41[0], P42[0]]
 Y4 = [P41[1], P42[1]]
-# linha vertical direita cima
-P51 = np.array([2, 10])
-P52 = np.array([2, 0])
+
+# linha vertical direita
+P51 = np.array([0, 12])
+P52 = np.array([0, -3])
 X5 = [P51[0], P52[0]]
 Y5 = [P51[1], P52[1]]
+#linha horizontal
+P61 = np.array([-2, -5])
+P62 = np.array([4, -5])
+X6 = [P61[0], P62[0]]
+Y6 = [P61[1], P62[1]]
+#linha horizontal
+P71 = np.array([0, -3])
+P72 = np.array([3, -3])
+X7 = [P71[0], P72[0]]
+Y7 = [P71[1], P72[1]]
 
+P81 = np.array([-2, 14])
+P82 = np.array([2, 14])
+X8 = [P81[0], P82[0]]
+Y8 = [P81[1], P82[1]]
+
+P91 = np.array([0, 12])
+P92 = np.array([2, 12])
+X9 = [P91[0], P92[0]]
+Y9 = [P91[1], P92[1]]
 
 
 INPUT_NOISE = np.diag([0.1, np.deg2rad(0.5)]) ** 2
@@ -58,10 +88,16 @@ R = np.diag([
 
 def plot_map():
     plt.plot(X1, Y1, '-k')
+
     plt.plot(X2, Y2, '-k')
     plt.plot(X3, Y3, '-k')
     plt.plot(X4, Y4, '-k')
+
     plt.plot(X5, Y5, '-k')
+    plt.plot(X6, Y6, '-k')
+    plt.plot(X7, Y7, '-k')
+    plt.plot(X8, Y8, '-k')
+    plt.plot(X9, Y9, '-k')
     # plt.show()
 
 
@@ -145,6 +181,20 @@ def laser_model(x_true, tl):
     elif intersect(P11, P12, pl1, pl2):
         laser_scan = get_intersect(P11, P12, pl1, pl2)
         r = np.linalg.norm(pl1 - laser_scan)
+
+    elif intersect(P61, P62, pl1, pl2):
+        laser_scan = get_intersect(P61, P62, pl1, pl2)
+        r = np.linalg.norm(pl1 - laser_scan)
+    elif intersect(P71, P72, pl1, pl2):
+        laser_scan = get_intersect(P71, P72, pl1, pl2)
+        r = np.linalg.norm(pl1 - laser_scan)
+    elif intersect(P81, P82, pl1, pl2):
+        laser_scan = get_intersect(P81, P82, pl1, pl2)
+        r = np.linalg.norm(pl1 - laser_scan)
+    elif intersect(P91, P92, pl1, pl2):
+        laser_scan = get_intersect(P91, P92, pl1, pl2)
+        r = np.linalg.norm(pl1 - laser_scan)
+
     elif intersect(P21, P22, pl1, pl2):
         laser_scan = get_intersect(P21, P22, pl1, pl2)
         r = np.linalg.norm(pl1 - laser_scan)
@@ -584,11 +634,14 @@ if __name__ == '__main__':
 
     # vetor de estado [x y theta]
     xTrue = np.zeros((3, 1))
+    xTrue[0] = -1
+    xTrue[1] = -4
     xTrue[2] = pi/2
     #xPr = np.zeros((3, 1))
     xDR = xTrue
     xDR = np.zeros((3,1))
     xDR[0] = -1
+    xDR[1] = -4
     xDR[2] = pi/2
     #xPred = np.zeros((3, 1))
     xEst = xDR
@@ -612,11 +665,15 @@ if __name__ == '__main__':
     g = 1 #Threshold do matching
 
     # print(seg_intersect(P11,P12,P21,P22))
-    #Mapa fixo (retangulo)
-    mapa = np.array([[pi, 0, pi/2, pi/2], [2, 2, 5, 8]])
+    #Mapa corredor comprido
+    #mapa = np.array([[-pi / 2, -pi / 2, pi, pi / 2,  pi / 2, pi / 2], [5, 3, 2, 0,  12, 14]])
+
+    #Mapa corredor com parte do elevador
+    mapa = np.array([[-pi/2, -pi/2, pi, pi/2, pi/2, pi/2, pi/2, pi/2], [5, 3, 2, 0, 5, 8, 12, 14]])
+
 
     # hz = np.zeros((2, 1))
-    while time <= 150:
+    while time <= 180:
         plt.cla()
         tempao += 1
         if tempao == 30:
@@ -719,4 +776,5 @@ if __name__ == '__main__':
         plt.pause(0.001)
         # print(time)
 
+    plt.axis('equal')
     plt.show()
