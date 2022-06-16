@@ -47,7 +47,7 @@ Y5 = [P51[1], P52[1]]
 
 INPUT_NOISE = np.diag([0.1, np.deg2rad(0.5)]) ** 2
 SIM_TIME = 62.8
-DT = 0.1
+DT = 0.2
 
 R = np.diag([
     0.1,  # variance of location on x-axis
@@ -148,12 +148,13 @@ def laser_model(x_true, tl):
     elif intersect(P21, P22, pl1, pl2):
         laser_scan = get_intersect(P21, P22, pl1, pl2)
         r = np.linalg.norm(pl1 - laser_scan)
-    elif intersect(P31, P32, pl1, pl2):
-        laser_scan = get_intersect(P31, P32, pl1, pl2)
-        r = np.linalg.norm(pl1 - laser_scan)
     elif intersect(P41, P42, pl1, pl2):
         laser_scan = get_intersect(P41, P42, pl1, pl2)
         r = np.linalg.norm(pl1 - laser_scan)
+    elif intersect(P31, P32, pl1, pl2):
+        laser_scan = get_intersect(P31, P32, pl1, pl2)
+        r = np.linalg.norm(pl1 - laser_scan)
+
     # elif intersect(P51, P52, pl1, pl2):
     #    laser_scan = get_intersect(P51, P52, pl1, pl2) 
     #   r = np.linalg.norm(pl1-laser_scan)
@@ -577,6 +578,7 @@ if __name__ == '__main__':
     omega = 0.1
 
 
+
     time = 0.0
     i = 0
 
@@ -585,9 +587,9 @@ if __name__ == '__main__':
     xTrue[2] = pi/2
     #xPr = np.zeros((3, 1))
     xDR = xTrue
-    # xDR = np.zeros((3,1))
-    # xDR[0] = -1
-    # xDR[2] = pi/2
+    xDR = np.zeros((3,1))
+    xDR[0] = -1
+    xDR[2] = pi/2
     #xPred = np.zeros((3, 1))
     xEst = xDR
 
@@ -607,7 +609,7 @@ if __name__ == '__main__':
     scan_m = np.zeros((2, i))
 
     thresholds = Thresholds()
-    g = 0.15 #Threshold do matching
+    g = 1 #Threshold do matching
 
     # print(seg_intersect(P11,P12,P21,P22))
     #Mapa fixo (retangulo)
@@ -617,9 +619,9 @@ if __name__ == '__main__':
     while time <= 150:
         plt.cla()
         tempao += 1
-        if tempao == 40:
+        if tempao == 60:
             omega = -omega
-            tempao = 0
+            tempao = -80
 
         u = np.array([[v * DT], [omega * DT]])
         time += DT
