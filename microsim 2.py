@@ -543,17 +543,19 @@ def step_update(x_pred, E_pred,  Z, R_seg, mapa, g):
 
     v, H, R_seg = matching(x_pred, E_pred, Z, R_seg, mapa, g)
 
-
-
     #mudar formato de v, H e R para usar nas equacoes
     y = np.reshape(v, (v.shape[0]*v.shape[1],1), 'F')
 
+    H = np.transpose(H, [0, 2, 1])
+    Hreshape = np.reshape(H, [-1, 3], 'F')
+    """
     Hreshape = np.zeros((H.shape[0] * H.shape[2], 3))
     cenoura = 0
     for batata in range(0, H.shape[2]):
         Hreshape[cenoura, :] = H[0, :, batata]
         Hreshape[cenoura + 1, :] = H[1, :, batata]
         cenoura = cenoura + 2
+    """
 
     if R_seg.shape[2] == 0:
         R_seg1 = []
