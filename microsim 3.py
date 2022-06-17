@@ -124,7 +124,6 @@ def get_intersect(p11, p12, p21, p22):
     return x / z, y / z
 
 
-
 def laser_model(x_true, tl):
     x1 = x_true[0, 0]
     y1 = x_true[1, 0]
