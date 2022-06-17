@@ -419,13 +419,15 @@ def extractlines(theta, rho, thersholds):
     # for l in range(0, n):
     #    print(np.concatenate([np.transpose(xy[:, pointsidx[l, 0]]), np.transpose(xy[:, pointsidx[l, 1]])], axis = 1))
     pointsidx = np.asmatrix(pointsidx)
-    for l in range(0, n):
-        segmends[l, :] = np.concatenate([np.transpose(xy[:, pointsidx[l, 0]]), np.transpose(xy[:, pointsidx[l, 1]])],
-                                        axis=1)
-        # segmends[l, :] = [np.transpose(xy[:, pointsidx[l, 0]]), np.transpose(xy[:, pointsidx[l, 1]])]
-        # for j in range(0:4):
-        #    segmends[l, j] = [xy[j, pointsidx[l, 0]]]
-        segmlen[l] = math.sqrt((segmends[l, 0] - segmends[l, 2]) ** 2 + (segmends[l, 1] - segmends[l, 3]) ** 2)
+
+    if pointsidx.shape[0]!=0:
+        for l in range(0, n):
+            segmends[l, :] = np.concatenate([np.transpose(xy[:, pointsidx[l, 0]]), np.transpose(xy[:, pointsidx[l, 1]])],
+                                            axis=1)
+            # segmends[l, :] = [np.transpose(xy[:, pointsidx[l, 0]]), np.transpose(xy[:, pointsidx[l, 1]])]
+            # for j in range(0:4):
+            #    segmends[l, j] = [xy[j, pointsidx[l, 0]]]
+            segmlen[l] = math.sqrt((segmends[l, 0] - segmends[l, 2]) ** 2 + (segmends[l, 1] - segmends[l, 3]) ** 2)
 
     segmlen = np.transpose(segmlen)
     # print(((pointsidx[:,1] - pointsidx[:,0]) >= thersholds.min_point_seg))
@@ -553,12 +555,12 @@ def matching(x, P, Z, R_seg, M, g):
 
     measursidx = np.argwhere(minima < g**2)
 
-    print('measuridx')
-    print(measursidx)
+    #print('measuridx')
+    #print(measursidx)
 
     mapidx = mapidx[np.transpose(measursidx)]
-    print('mapidx')
-    print(mapidx)
+    #print('mapidx')
+    #print(mapidx)
 
     seletor = (mapidx + (np.transpose(measursidx))* n_map)
     seletorl =[]
@@ -566,8 +568,8 @@ def matching(x, P, Z, R_seg, M, g):
         seletorl.append(seletor.item(fofo))
 
     v = v[:, seletorl]
-    print('v')
-    print(v)
+    #print('v')
+    #print(v)
 
     H = H[:, :, seletorl]
 
@@ -624,6 +626,27 @@ def step_update(x_pred, E_pred,  Z, R_seg, mapa, g):
 
     return x_up, E_up
 
+def plot_function(xTrue_plot, xDR_plot, xEst_plot):
+    plt.gcf().canvas.mpl_connect('key_release_event',
+                                 lambda event: [exit(0) if event.key == 'escape' else None])
+    plot_map()
+
+    plt.plot(xTrue_plot[0, :].flatten(),
+             xTrue_plot[1, :].flatten(), "-b")
+    plt.plot(xDR_plot[0, :].flatten(),
+             xDR_plot[1, :].flatten(), "-k")
+    plt.plot(xEst_plot[0, :].flatten(),
+             xEst_plot[1, :].flatten(), "-r")
+
+    plt.axis("equal")
+    # plt.axis([-3.5, 3.5, -3.5, 3.5])
+    plt.grid(True)
+    #plt.pause(0.001)
+    # print(time)
+
+    plt.axis('equal')
+    plt.show()
+
 
 if __name__ == '__main__':
     v = 0.1
@@ -664,7 +687,7 @@ if __name__ == '__main__':
     scan_m = np.zeros((2, i))
 
     thresholds = Thresholds()
-    g = 1 #Threshold do matching
+    g = 0.5 #Threshold do matching
 
     # print(seg_intersect(P11,P12,P21,P22))
     #Mapa corredor comprido
@@ -744,6 +767,7 @@ if __name__ == '__main__':
 
 
         # for stopping simulation with the esc key.
+        """
         plt.gcf().canvas.mpl_connect('key_release_event',
                                      lambda event: [exit(0) if event.key == 'escape' else None])
         plot_map()
@@ -754,11 +778,13 @@ if __name__ == '__main__':
                  xDR_plot[1, :].flatten(), "-k")
         plt.plot(xEst_plot[0, :].flatten(),
                  xEst_plot[1, :].flatten(), "-r")
+                 
+        """
 
         # print(z[1])
-        print('z dentro do while main')
-        print(z[0]*(180/pi))
-        print(z[1])
+        #print('z dentro do while main')
+        #print(z[0]*(180/pi))
+        #print(z[1])
 
         """
         for monkey in range(0, segends.shape[0]):
@@ -771,12 +797,12 @@ if __name__ == '__main__':
             plt.plot(x_values, y_values, '#03adfc')
         """
         # plot_covariance_ellipse(xEst, EEst)
-
+        """
         plt.axis("equal")
         #plt.axis([-3.5, 3.5, -3.5, 3.5])
         plt.grid(True)
         plt.pause(0.001)
         # print(time)
+        """
 
-    plt.axis('equal')
-    plt.show()
+    plot_function(xTrue_plot, xDR_plot, xEst_plot)
