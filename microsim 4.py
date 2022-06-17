@@ -70,11 +70,11 @@ INPUT_NOISE = np.diag([0.1, np.deg2rad(2.0)]) ** 2
 SIM_TIME = 62.8
 DT = 0.2
 
-REst = np.diag([
+Q_est = np.diag([
     0.1,  # variance of location on x-axis
     0.1,  # variance of location on y-axis
     np.deg2rad(2.0),  # variance of theta
-]) ** 2  # predict state covariance
+]) ** 2  
 
 
 def plot_map():
@@ -91,45 +91,44 @@ def plot_map():
     plt.plot(X9, Y9, '-k')
 
 
-def ekf_estimation(xEst, Eest, u):
-    # Predict step
-    # xEst é o anterior e vai ser atualizado no final
-    G_x = np.array([[1.0, 0, -u[0, 0] * math.sin(xEst[2, 0] + u[1, 0])],
-                    [0, 1.0, u[0, 0] * math.cos(xEst[2, 0] + u[1, 0])],
+def predict(x_est, E_est, u):
+    # _predict step
+    # x_est é o anterior e vai ser atualizado no final
+    G_x = np.array([[1.0, 0, -u[0, 0] * math.sin(x_est[2, 0] + u[1, 0])],
+                    [0, 1.0, u[0, 0] * math.cos(x_est[2, 0] + u[1, 0])],
                     [0, 0, 1.0]])
 
-    b = np.array([[u[0, 0] * math.cos(xEst[2, 0] + u[1, 0])],
-                  [u[0, 0] * math.sin(xEst[2, 0] + u[1, 0])],
+    b = np.array([[u[0, 0] * math.cos(x_est[2, 0] + u[1, 0])],
+                  [u[0, 0] * math.sin(x_est[2, 0] + u[1, 0])],
                   [u[1, 0]]])
 
-    Eest = G_x @ Eest @ G_x.T + REst
-    xEst = xEst + b
+    E_est = G_x @ E_est @ G_x.T + Q_est
+    x_est = x_est + b
 
-    return xEst, Eest
+    return x_est, E_est
 
 
-def observation(xTrue, xDR, u):
-    b = np.array([[u[0, 0] * math.cos(xTrue[2, 0] + u[1, 0])],
-                  [u[0, 0] * math.sin(xTrue[2, 0] + u[1, 0])],
+def predict_motion(x_real, x_pred, u):
+    b = np.array([[u[0, 0] * math.cos(x_real[2, 0] + u[1, 0])],
+                  [u[0, 0] * math.sin(x_real[2, 0] + u[1, 0])],
                   [u[1, 0]]])
-    xTrue = xTrue + b
+    x_real = x_real + b
 
-    ud = u + INPUT_NOISE @ np.random.randn(2, 1)
-    bd = np.array([[ud[0, 0] * math.cos(xDR[2, 0] + ud[1, 0])],
-                   [ud[0, 0] * math.sin(xDR[2, 0] + ud[1, 0])],
-                   [ud[1, 0]]])
-    xDR = xDR + bd
+    u_e = u + INPUT_NOISE @ np.random.randn(2, 1)
+    b_e = np.array([[u_e[0, 0] * math.cos(x_pred[2, 0] + u_e[1, 0])],
+                   [u_e[0, 0] * math.sin(x_pred[2, 0] + u_e[1, 0])],
+                   [u_e[1, 0]]])
+    x_pred = x_pred + b_e
 
-    return xTrue, xDR, ud
+    return x_real, x_pred, u_e
 
-
-def ccw(A, B, C):
+# Helper function para funcao intersect
+def inter_help(A, B, C):
     return (C[1] - A[1]) * (B[0] - A[0]) > (B[1] - A[1]) * (C[0] - A[0])
 
-
-# Return true if line segments AB and CD intersect
-def intersect(A, B, C, D):
-    return ccw(A, C, D) != ccw(B, C, D) and ccw(A, B, C) != ccw(A, B, D)
+# Retornar true se segmentos AB e CD intersetarem
+def check_intersect(A, B, C, D):
+    return inter_help(A, C, D) != inter_help(B, C, D) and inter_help(A, B, C) != inter_help(A, B, D)
 
 
 def get_intersect(p11, p12, p21, p22):
@@ -165,33 +164,33 @@ def laser_model(x_true, tl):
     pl2 = np.array([x2, y2])
     r_error = 0.1 ** 2 * np.random.randn(1)
 
-    if intersect(P51, P52, pl1, pl2):
+    if check_intersect(P51, P52, pl1, pl2):
         laser_scan = get_intersect(P51, P52, pl1, pl2)
         r = np.linalg.norm(pl1 - laser_scan)
-    elif intersect(P11, P12, pl1, pl2):
+    elif check_intersect(P11, P12, pl1, pl2):
         laser_scan = get_intersect(P11, P12, pl1, pl2)
         r = np.linalg.norm(pl1 - laser_scan)
 
-    elif intersect(P61, P62, pl1, pl2):
+    elif check_intersect(P61, P62, pl1, pl2):
         laser_scan = get_intersect(P61, P62, pl1, pl2)
         r = np.linalg.norm(pl1 - laser_scan)
-    elif intersect(P71, P72, pl1, pl2):
+    elif check_intersect(P71, P72, pl1, pl2):
         laser_scan = get_intersect(P71, P72, pl1, pl2)
         r = np.linalg.norm(pl1 - laser_scan)
-    elif intersect(P81, P82, pl1, pl2):
+    elif check_intersect(P81, P82, pl1, pl2):
         laser_scan = get_intersect(P81, P82, pl1, pl2)
         r = np.linalg.norm(pl1 - laser_scan)
-    elif intersect(P91, P92, pl1, pl2):
+    elif check_intersect(P91, P92, pl1, pl2):
         laser_scan = get_intersect(P91, P92, pl1, pl2)
         r = np.linalg.norm(pl1 - laser_scan)
 
-    elif intersect(P21, P22, pl1, pl2):
+    elif check_intersect(P21, P22, pl1, pl2):
         laser_scan = get_intersect(P21, P22, pl1, pl2)
         r = np.linalg.norm(pl1 - laser_scan)
-    elif intersect(P41, P42, pl1, pl2):
+    elif check_intersect(P41, P42, pl1, pl2):
         laser_scan = get_intersect(P41, P42, pl1, pl2)
         r = np.linalg.norm(pl1 - laser_scan)
-    elif intersect(P31, P32, pl1, pl2):
+    elif check_intersect(P31, P32, pl1, pl2):
         laser_scan = get_intersect(P31, P32, pl1, pl2)
         r = np.linalg.norm(pl1 - laser_scan)
 
@@ -203,8 +202,8 @@ def laser_model(x_true, tl):
     return laser_scan, r, r_error
 
 
-# Split and merge funçoes
-
+# Funcoes split and merge
+#POR COMENTARIOS THRESHOLDS
 class Thresholds:
     def __init__(self):
         self.seg_min_length = 0.01
@@ -212,19 +211,19 @@ class Thresholds:
         self.min_point_seg = 6
 
 
-def fitline(pontos):
+def line_regression(pontos):
 
     _, len = pontos.shape
 
-    xc, yc = pontos.sum(axis=1) / len
-    dx = (pontos[0, :] - xc)
-    dy = (pontos[1, :] - yc)
+    x_c, y_c = pontos.sum(axis=1) / len
+    dx = (pontos[0, :] - x_c)
+    dy = (pontos[1, :] - y_c)
 
     num = -2 * np.matrix.sum(np.multiply(dx, dy))
-    denom = np.matrix.sum(np.multiply(dy, dy) - np.multiply(dx, dx))
-    alpha = math.atan2(num, denom) / 2
+    den = np.matrix.sum(np.multiply(dy, dy) - np.multiply(dx, dx))
+    alpha = math.atan2(num, den) / 2
 
-    r = xc * math.cos(alpha) + yc * math.sin(alpha)
+    r = x_c * math.cos(alpha) + y_c * math.sin(alpha)
 
     if r < 0:
         alpha = alpha + math.pi
@@ -235,110 +234,110 @@ def fitline(pontos):
     return alpha, r
 
 
-def compdistpointstoline(xy, alpha, r):
-    xcosa = xy[0, :] * math.cos(alpha)
-    ysina = xy[1, :] * math.sin(alpha)
+def dist2line(pontos, alpha, r):
+    xcosa = pontos[0, :] * math.cos(alpha)
+    ysina = pontos[1, :] * math.sin(alpha)
     d = xcosa + ysina - r
     return d
 
 
-def findsplitposid(d, thresholds):
+def split_position_id(d, thresholds):
 
-    N = d.shape[1]
+    n_d = d.shape[1]
     d = abs(d)
 
     mask = d > thresholds.point_dist
 
     if not np.any(mask):
-        splitpos = -1
-        return splitpos
+        split_position = -1
+        return split_position
 
-    splitpos = np.argmax(d)
+    split_position = np.argmax(d)
 
-    if (splitpos == 0):
-        splitpos = 1
-    if (splitpos == (N - 1)):
-        splitpos = N - 2
-    return splitpos
-
-
-def findsplitpos(xy, alpha, r, thresholds):
-    d = compdistpointstoline(xy, alpha, r)
-    splitpos = findsplitposid(d, thresholds)
-    return splitpos
+    if (split_position == 0):
+        split_position = 1
+    if (split_position == (n_d - 1)):
+        split_position = n_d - 2
+    return split_position
 
 
-def splitlines(xy, startidx, endidx, thresholds):
-    N = endidx - startidx + 1
+def find_split_position(pontos, alpha, r, thresholds):
+    d = dist2line(pontos, alpha, r)
+    split_position = split_position_id(d, thresholds)
+    return split_position
 
-    alpha, r = fitline(xy[:, startidx:(endidx + 1)])
 
-    if N <= 2:
-        idx = [startidx, endidx]
-        return alpha, r, idx
+def split_lines(pontos, i_id, f_id, thresholds):
+    n_p = f_id - i_id + 1
 
-    splitpos = findsplitpos(xy[:, startidx:(endidx + 1)], alpha, r, thresholds)
+    alpha, r = line_regression(pontos[:, i_id:(f_id + 1)])
 
-    if (splitpos != -1):
-        alpha1, r1, idx1 = splitlines(xy, startidx, splitpos + startidx, thresholds)  # se calhar start idx-1
-        alpha2, r2, idx2 = splitlines(xy, splitpos + startidx, endidx, thresholds)
+    if n_p <= 2:
+        ids = [i_id, f_id]
+        return alpha, r, ids
+
+    split_position = find_split_position(pontos[:, i_id:(f_id + 1)], alpha, r, thresholds)
+
+    if (split_position != -1):
+        alpha1, r1, idx1 = split_lines(pontos, i_id, split_position + i_id, thresholds)  # se calhar start ids-1
+        alpha2, r2, idx2 = split_lines(pontos, split_position + i_id, f_id, thresholds)
         alpha = np.vstack((alpha1, alpha2))
         r = np.vstack((r1, r2))
-        idx = np.vstack((idx1, idx2))
+        ids = np.vstack((idx1, idx2))
     else:
-        idx = np.array([startidx, endidx])
+        ids = np.array([i_id, f_id])
 
-    return alpha, r, idx
+    return alpha, r, ids
 
 
-def mergeColinear(xy, alpha, r, pointidx, thresholds):
+def merge_lines(pontos, alpha, r, p_ids, thresholds):
     z = [alpha[0, 0], r[0, 0]]
-    startidx = pointidx[0, 0]
-    lastendidx = pointidx[0, 1]
+    i_id = p_ids[0, 0]
+    last_id = p_ids[0, 1]
 
-    N = r.shape[0]
-    zt = [0, 0]
+    n_lines = r.shape[0]
+    z_t = [0, 0]
 
-    rOut = []
-    alphaOut = []
-    pointidxOut = []
+    r_out = []
+    alpha_out = []
+    p_ids_out = []
 
     j = 0
 
-    for i in range(1, N):
-        endidx = pointidx[i, 1]
+    for i in range(1, n_lines):
+        f_id = p_ids[i, 1]
 
-        zt[0], zt[1] = fitline(xy[:, startidx:(endidx + 1)])
+        z_t[0], z_t[1] = line_regression(pontos[:, i_id:(f_id + 1)])
 
-        splitpos = findsplitpos(xy[:, startidx:(endidx + 1)], zt[0], zt[1], thresholds)
-        zt[1] = np.matrix.item(zt[1])
+        split_position = find_split_position(pontos[:, i_id:(f_id + 1)], z_t[0], z_t[1], thresholds)
+        z_t[1] = np.matrix.item(z_t[1])
 
-        if splitpos == -1:
-            z = zt
+        if split_position == -1:
+            z = z_t
         else:
-            alphaOut.append(z[0])
-            rOut.append(z[1])
-            pointidxOut.extend([startidx, lastendidx])
+            alpha_out.append(z[0])
+            r_out.append(z[1])
+            p_ids_out.extend([i_id, last_id])
             j = j + 1
             z = [alpha[i, 0], r[i, 0]]
-            startidx = pointidx[i, 0]
+            i_id = p_ids[i, 0]
 
-        lastendidx = endidx
+        last_id = f_id
 
     # Adicionar o ultimo segmento
-    alphaOut.append(z[0])
-    rOut.append(z[1])
-    pointidxOut.extend([startidx, lastendidx])
+    alpha_out.append(z[0])
+    r_out.append(z[1])
+    p_ids_out.extend([i_id, last_id])
 
-    pointidxOut = np.array(pointidxOut)
-    pointidxOut = np.reshape(pointidxOut, (j + 1, 2))
-    alphaOut = np.array(alphaOut)
-    alphaOut = np.reshape(alphaOut, (j + 1, 1))
-    rOut = np.array(rOut)
-    rOut = np.reshape(rOut, (j + 1, 1))
-    rOut = np.asmatrix(rOut)
+    p_ids_out = np.array(p_ids_out)
+    p_ids_out = np.reshape(p_ids_out, (j + 1, 2))
+    alpha_out = np.array(alpha_out)
+    alpha_out = np.reshape(alpha_out, (j + 1, 1))
+    r_out = np.array(r_out)
+    r_out = np.reshape(r_out, (j + 1, 1))
+    r_out = np.asmatrix(r_out)
 
-    return alphaOut, rOut, pointidxOut
+    return alpha_out, r_out, p_ids_out
 
 
 def pol2cart(theta, rho):
@@ -350,68 +349,67 @@ def pol2cart(theta, rho):
     return x, y
 
 
-def extractlines(theta, rho, thersholds):
+def split_merge(theta, rho, thersholds):
 
     x, y = pol2cart(theta, rho)
 
-    xy = np.vstack((x, y))
-    xy = np.asmatrix(xy)
+    pxy = np.vstack((x, y))
+    pxy = np.asmatrix(pxy)
 
-    startidx = 0
-    endidx = xy.shape[1] - 1  # x e y são vetores linha
+    i_id = 0
+    f_id = pxy.shape[1] - 1  # x e y são vetores linha
 
     # faz a extracao das linhas
-    alpha, r, pointsidx = splitlines(xy, startidx, endidx, thersholds)
+    alpha, r, p_ids = split_lines(pxy, i_id, f_id, thersholds)
 
     # numero de segmentos de reta, caso seja mais do que um segmento, verifica se sao colineares
     n = r.shape[0]
     if n > 1:
-        alpha, r, pointsidx = mergeColinear(xy, alpha, r, pointsidx, thersholds)
+        alpha, r, p_ids = merge_lines(pxy, alpha, r, p_ids, thersholds)
         n = r.shape[0]
         # atualiza o numero de segmentos
 
     # definir coordenads dos endpoints e len dos segmentos
-    segmends = np.zeros((n, 4))
-    segmlen = np.zeros((n, 1))
+    seg_i_f = np.zeros((n, 4))
+    seg_len = np.zeros((n, 1))
 
-    pointsidx = np.asmatrix(pointsidx)
+    p_ids = np.asmatrix(p_ids)
 
-    if pointsidx.shape[0]!=0:
+    if p_ids.shape[0]!=0:
         for l in range(0, n):
-            segmends[l, :] = np.concatenate([np.transpose(xy[:, pointsidx[l, 0]]), np.transpose(xy[:, pointsidx[l, 1]])],
+            seg_i_f[l, :] = np.concatenate([np.transpose(pxy[:, p_ids[l, 0]]), np.transpose(pxy[:, p_ids[l, 1]])],
                                             axis=1)
-            segmlen[l] = math.sqrt((segmends[l, 0] - segmends[l, 2]) ** 2 + (segmends[l, 1] - segmends[l, 3]) ** 2)
+            seg_len[l] = math.sqrt((seg_i_f[l, 0] - seg_i_f[l, 2]) ** 2 + (seg_i_f[l, 1] - seg_i_f[l, 3]) ** 2)
 
-    segmlen = np.transpose(segmlen)
+    seg_len = np.transpose(seg_len)
 
     # remover segmentos demasiados pequenos
-    goodsegmidx = np.argwhere(
-        np.transpose(segmlen >= thersholds.seg_min_length) & (
-                    (pointsidx[:, 1] - pointsidx[:, 0]) >= thersholds.min_point_seg))
-
+    correct_segs_ids = np.argwhere(
+        np.transpose(seg_len >= thersholds.seg_min_length) & (
+                    (p_ids[:, 1] - p_ids[:, 0]) >= thersholds.min_point_seg))
 
     '''
     print('1a condicao')
-    print(segmlen >= thersholds.seg_min_length)
+    print(seg_len >= thersholds.seg_min_length)
     print('2a condicao')
-    print((pointsidx[:, 1] - pointsidx[:, 0]) >= thersholds.min_point_seg)
+    print((p_ids[:, 1] - p_ids[:, 0]) >= thersholds.min_point_seg)
     print('and')
     print(
-        np.transpose(segmlen >= thersholds.seg_min_length) & ((pointsidx[:, 1] - pointsidx[:, 0]) >= thersholds.min_point_seg))
+        np.transpose(seg_len >= thersholds.seg_min_length) & ((p_ids[:, 1] - p_ids[:, 0]) >= thersholds.min_point_seg))
 
-    print('goodsegmidx')
-    print(goodsegmidx)
+    print('correct_segs_ids')
+    print(correct_segs_ids)
     '''
-    pointsidx = pointsidx[goodsegmidx[:, 0], :]
+    p_ids = p_ids[correct_segs_ids[:, 0], :]
 
     alpha = np.asmatrix(alpha)
-    alpha = alpha[goodsegmidx[:, 0], 0]
+    alpha = alpha[correct_segs_ids[:, 0], 0]
 
-    r = r[goodsegmidx[:, 0], 0]
+    r = r[correct_segs_ids[:, 0], 0]
 
-    segmends = segmends[goodsegmidx[:, 0], :]
-    segmlen = np.transpose(segmlen)
-    segmlen = segmlen[goodsegmidx[:, 0], 0]
+    seg_i_f = seg_i_f[correct_segs_ids[:, 0], :]
+    seg_len = np.transpose(seg_len)
+    seg_len = seg_len[correct_segs_ids[:, 0], 0]
 
     z = np.transpose(np.hstack((alpha, r)))
     R_seg = np.zeros((2, 2, alpha.shape[0]))
@@ -420,10 +418,10 @@ def extractlines(theta, rho, thersholds):
         for j in range(0,2):
             R_seg[j,j,c] = 0.5
 
-    return z, R_seg, segmends
+    return z, R_seg, seg_i_f
 
 
-def normalizelineparameters(alpha, r):
+def normalize_line(alpha, r):
     if r < 0:
         alpha = alpha + pi
         r = -r
@@ -439,11 +437,11 @@ def normalizelineparameters(alpha, r):
     return alpha, r, isRNegated
 
 
-def updatemat(x, m):
+def update_mat(x, m):
     h = np.array([[m[0] - x[2,0]], [m[1] - (x[0,0] * math.cos(m[0]) + x[1,0] * math.sin(m[0]))]])
     Hxmat = np.array([[0, 0, -1], [-math.cos(m[0]), -math.sin(m[0]), 0]])
 
-    [h[0], h[1], isdistneg] = normalizelineparameters(h[0], h[1])
+    [h[0], h[1], isdistneg] = normalize_line(h[0], h[1])
 
     if isdistneg:
         Hxmat[1, :] = -Hxmat[1, :]
@@ -451,9 +449,9 @@ def updatemat(x, m):
     return h, Hxmat
 
 
-def matching(x, P, Z, R_seg, M, g):
-    #Z: Linhas observadas
-    n_measurs = Z.shape[1]
+def matching(x, P, z, R_seg, M, g):
+    #z: Linhas observadas
+    n_measurs = z.shape[1]
     n_map = M.shape[1]
 
     d = np.zeros((n_measurs, n_map))
@@ -465,17 +463,17 @@ def matching(x, P, Z, R_seg, M, g):
 
     for aux_nme in range(0, n_measurs):
         for aux_nmap in range(0, n_map):
-            Z_predict, H[:, :, aux_nmap + (aux_nme) * n_map] = updatemat(x, M[:, aux_nmap])
-            v[:, aux_nmap + (aux_nme) * n_map] = Z[:, aux_nme] - Z_predict
+            z_predict, H[:, :, aux_nmap + (aux_nme) * n_map] = update_mat(x, M[:, aux_nmap])
+            v[:, aux_nmap + (aux_nme) * n_map] = z[:, aux_nme] - z_predict
             W = H[:, :, aux_nmap + (aux_nme) * n_map] @ P @ np.transpose(H[:, :, aux_nmap + (aux_nme) * n_map]) + R_seg[:, :, aux_nme]
             #Distancia Mahalanahobis
             d[aux_nme, aux_nmap] = np.transpose(v[:, aux_nmap + (aux_nme) * n_map]) * np.linalg.inv(W) * v[:, aux_nmap + (aux_nme) * n_map]
 
 
-    minima, mapidx = (np.transpose(d)).min(0), (np.transpose(d)).argmin(0)
-    measursidx = np.argwhere(minima < g**2)
-    mapidx = mapidx[np.transpose(measursidx)]
-    seletor = (mapidx + (np.transpose(measursidx))* n_map)
+    min_mahal, map_id = (np.transpose(d)).min(0), (np.transpose(d)).argmin(0)
+    measure_id = np.argwhere(min_mahal < g**2)
+    map_id = map_id[np.transpose(measure_id)]
+    seletor = (map_id + (np.transpose(measure_id))* n_map)
     seletorl =[]
 
     for f in range(0,seletor.shape[1]):
@@ -484,37 +482,33 @@ def matching(x, P, Z, R_seg, M, g):
     v = v[:, seletorl]
     H = H[:, :, seletorl]
 
-    measursidx = np.transpose(measursidx)
-    measuridxl = []
-    for b in range(0, measursidx.shape[1]):
-        measuridxl.append(measursidx.item(b))
+    measure_id = np.transpose(measure_id)
+    measure_idl = []
+    for b in range(0, measure_id.shape[1]):
+        measure_idl.append(measure_id.item(b))
     if seletorl == []:
         R_seg = R_seg[:, :, seletorl]
     else:
-        R_seg = R_seg[:, :, measuridxl]
+        R_seg = R_seg[:, :, measure_idl]
 
     return v, H, R_seg
 
 
-def step_update(x_pred, E_pred,  Z, R_seg, mapa, g):
+def update(x_est, E_est, z, R_seg, mapa, g):
 
-    if Z.shape[1]==0:
-        x_up = x_pred
-        E_up = E_pred
+    if z.shape[1]==0:
+        x_up = x_est
+        E_up = E_est
 
-        return  x_up, E_up
+        return x_up, E_up
 
-    v, H, R_seg = matching(x_pred, E_pred, Z, R_seg, mapa, g)
+    v, H, R_seg = matching(x_est, E_est, z, R_seg, mapa, g)
 
     #mudar formato de v, H e R para usar nas equacoes
     y = np.reshape(v, (v.shape[0]*v.shape[1],1), 'F')
 
-    Hreshape = np.zeros((H.shape[0] * H.shape[2], 3))
-    cenoura = 0
-    for batata in range(0, H.shape[2]):
-        Hreshape[cenoura, :] = H[0, :, batata]
-        Hreshape[cenoura + 1, :] = H[1, :, batata]
-        cenoura = cenoura + 2
+    H = np.transpose(H, [0, 2, 1])
+    Hreshape = np.reshape(H, [-1, 3], 'F')
 
     if R_seg.shape[2] == 0:
         R_seg1 = []
@@ -523,17 +517,17 @@ def step_update(x_pred, E_pred,  Z, R_seg, mapa, g):
         for bruh in range(1, R_seg.shape[2]):
             R_seg1 = scipy.linalg.block_diag(R_seg1, R_seg[:, :, bruh])
 
-    S = Hreshape @ E_pred @ np.transpose(Hreshape) + R_seg1
-    K = E_pred @ np.transpose(Hreshape) @ (np.linalg.inv(S))
+    S = Hreshape @ E_est @ np.transpose(Hreshape) + R_seg1
+    K = E_est @ np.transpose(Hreshape) @ (np.linalg.inv(S))
 
-    E_up = E_pred - K @ S @ np.transpose(K)
-    x_up = x_pred + K @ y
+    E_up = E_est - K @ S @ np.transpose(K)
+    x_up = x_est + K @ y
 
     return x_up, E_up
 
 
-def plot_covariance_ellipse(xEst, PEst):
-    Pxy = PEst[0:2, 0:2]
+def plot_covariance_ellipse(x_est, P_est):
+    Pxy = P_est[0:2, 0:2]
     eigval, eigvec = np.linalg.eig(Pxy)
 
     if eigval[0] >= eigval[1]:
@@ -558,22 +552,22 @@ def plot_covariance_ellipse(xEst, PEst):
         ])
 
     pe = Rot @ (np.array([ex, ey])) # pontos elipse apos rotaçao rotaçao da elipsoide
-    px = np.array(pe[0, :] + xEst[0, 0]).flatten() # centrar 
-    py = np.array(pe[1, :] + xEst[1, 0]).flatten() # centrar
+    px = np.array(pe[0, :] + x_est[0, 0]).flatten() # centrar 
+    py = np.array(pe[1, :] + x_est[1, 0]).flatten() # centrar
     plt.plot(px, py, "--r")
 
 
-def plot_function(xTrue_plot, xDR_plot, xEst_plot):
+def plots_x(x_real_plot, x_pred_plot, x_est_plot):
     plt.gcf().canvas.mpl_connect('key_release_event',
                                  lambda event: [exit(0) if event.key == 'escape' else None])
     plot_map()
 
-    plt.plot(xTrue_plot[0, :].flatten(),
-             xTrue_plot[1, :].flatten(), "-b")
-    plt.plot(xDR_plot[0, :].flatten(),
-             xDR_plot[1, :].flatten(), "-k")
-    plt.plot(xEst_plot[0, :].flatten(),
-             xEst_plot[1, :].flatten(), "-r")
+    plt.plot(x_real_plot[0, :].flatten(),
+             x_real_plot[1, :].flatten(), "-b")
+    plt.plot(x_pred_plot[0, :].flatten(),
+             x_pred_plot[1, :].flatten(), "-k")
+    plt.plot(x_est_plot[0, :].flatten(),
+             x_est_plot[1, :].flatten(), "-r")
 
     plt.axis("equal")
     plt.grid(True)
@@ -587,24 +581,24 @@ if __name__ == '__main__':
     i = 0
 
     # vetor de estado [x y theta]
-    xTrue = np.zeros((3, 1))
-    xTrue[0] = -1
-    xTrue[1] = -4
-    xTrue[2] = pi/2
+    x_real = np.zeros((3, 1))
+    x_real[0] = -1
+    x_real[1] = -4
+    x_real[2] = pi/2
 
-    # xDR = xTrue
-    xDR = np.zeros((3,1))
-    xDR[0] = -2
-    xDR[1] = -4
-    xDR[2] = pi/2
+    # x_pred = x_real
+    x_pred = np.zeros((3,1))
+    x_pred[0] = -1
+    x_pred[1] = -4
+    x_pred[2] = pi/2
 
-    xEst = xDR
-    EEst = np.eye(3)
+    x_est = x_pred
+    E_est = np.eye(3)
 
-    xDR_plot = xDR
-    xEst_plot = xEst
-    xTrue_plot = xTrue
-    tempao = 0
+    x_pred_plot = x_pred
+    x_est_plot = x_est
+    x_real_plot = x_real
+    t_traj = 0
 
     i = len(np.arange(-2.356194496154785, 2.0923497676849365, 0.05))
 
@@ -620,26 +614,22 @@ if __name__ == '__main__':
 
     while time <= 180:
         plt.cla()
-        tempao += 1
-        if tempao == 30:
+        t_traj += 1
+        if t_traj == 30:
             omega = -omega
-            tempao = -30
+            t_traj = -30
 
         u = np.array([[v * DT], [omega * DT]])
         time += DT
         j = 0
         dist = np.zeros((i, 1))
         thetas = np.zeros((i, 1))
-        xTrue, xDR, ud = observation(xTrue, xDR, u)
+        x_real, x_pred, u_e = predict_motion(x_real, x_pred, u)
 
-        xEst, EEst = ekf_estimation(xEst, EEst, ud)
+        x_est, E_est = predict(x_est, E_est, u_e)
         for tl in np.arange(-2.356194496154785, 2.0923497676849365, 0.05):
-            scan_point, rang, rang_error = laser_model(xTrue, tl)
-            """
-            r_error = 0.1**2 * np.random.randn(1)
-            scan_m[0,j] = scan_point[0] +  r_error*math.cos(tl)
-            scan_m[1,j] = scan_point[1] +  r_error*math.sin(tl)
-            """
+            scan_point, rang, rang_error = laser_model(x_real, tl)
+
             if scan_point != (float('inf'), float('inf')):
                 plt.scatter(scan_point[0] + rang_error * math.cos(tl), scan_point[1] + rang_error * math.sin(tl), 5,
                             '#e10600', ",", zorder=100)
@@ -661,15 +651,15 @@ if __name__ == '__main__':
         dist = np.transpose(np.asmatrix(dist))
         thetas = np.transpose(np.asmatrix(thetas))
 
-        z, Q, segends = extractlines(thetas, dist, thresholds)
+        z, R, seg_i_f = split_merge(thetas, dist, thresholds)
 
-        xEst, EEst = step_update(xEst, EEst, z, Q, mapa, g)
+        x_est, E_est = update(x_est, E_est, z, R, mapa, g)
 
-        xEst = np.asarray(xEst)
+        x_est = np.asarray(x_est)
         # fazer historico de dados (para plot)
-        xEst_plot = np.hstack((xEst_plot, xEst))
-        xDR_plot = np.hstack((xDR_plot, xDR))
-        xTrue_plot = np.hstack((xTrue_plot, xTrue))
+        x_est_plot = np.hstack((x_est_plot, x_est))
+        x_pred_plot = np.hstack((x_pred_plot, x_pred))
+        x_real_plot = np.hstack((x_real_plot, x_real))
 
 
         # simulaçao
@@ -678,26 +668,26 @@ if __name__ == '__main__':
                                      lambda event: [exit(0) if event.key == 'escape' else None])
         plot_map()
 
-        plt.plot(xTrue_plot[0, :].flatten(),
-                 xTrue_plot[1, :].flatten(), "-b")
-        plt.plot(xDR_plot[0, :].flatten(),
-                 xDR_plot[1, :].flatten(), "-k")
-        plt.plot(xEst_plot[0, :].flatten(),
-                 xEst_plot[1, :].flatten(), "-r")
+        plt.plot(x_real_plot[0, :].flatten(),
+                 x_real_plot[1, :].flatten(), "-b")
+        plt.plot(x_pred_plot[0, :].flatten(),
+                 x_pred_plot[1, :].flatten(), "-k")
+        plt.plot(x_est_plot[0, :].flatten(),
+                 x_est_plot[1, :].flatten(), "-r")
                  
 
 
         """
-        for mo in range(0, segends.shape[0]):
-            segends = np.array(segends)
-            point1 = [segends[mo, 0], segends[mo, 1]]
-            point2 = [segends[mo, 2], segends[mo, 3]]
+        for mo in range(0, seg_i_f.shape[0]):
+            seg_i_f = np.array(seg_i_f)
+            point1 = [seg_i_f[mo, 0], seg_i_f[mo, 1]]
+            point2 = [seg_i_f[mo, 2], seg_i_f[mo, 3]]
             x_values = [point1[0], point2[0]]
             y_values = [point1[1], point2[1]]
             plt.axis([-3.5, 3.5, -3.5, 3.5])
             plt.plot(x_values, y_values, '#03adfc')
         """
-        plot_covariance_ellipse(xEst, EEst)
+        plot_covariance_ellipse(x_est, E_est)
 
 
         plt.axis("equal")
@@ -709,10 +699,10 @@ if __name__ == '__main__':
 
         print(time)
 
-    #plot_function(xTrue_plot, xDR_plot, xEst_plot)
+    #plots_x(x_real_plot, x_pred_plot, x_est_plot)
     plt.show()
-    # dif2 = xTrue_plot-xDR_plot
-    dif1 = xTrue_plot - xEst_plot
+    # dif2 = x_real_plot-x_pred_plot
+    dif1 = x_real_plot - x_est_plot
 
     max1x = np.amax(dif1[0, :])
     min1x = np.amin(dif1[0, :])
