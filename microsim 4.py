@@ -537,29 +537,27 @@ def plot_covariance_ellipse(xEst, PEst):
     eigval, eigvec = np.linalg.eig(Pxy)
 
     if eigval[0] >= eigval[1]:
-        bigind = 0
-        smallind = 1
+        max = 0
+        min = 1
     else:
-        bigind = 1
-        smallind = 0
+        max = 1
+        min = 0
 
-    t = np.arange(0, 2 * math.pi + 0.1, 0.1)
-    a = math.sqrt(eigval[bigind])
-    b = math.sqrt(eigval[smallind])
-    x = [a * math.cos(it) for it in t]
-    y = [b * math.sin(it) for it in t]
-    angle = math.atan2(eigvec[1, bigind], eigvec[0, bigind])
+    ta = np.arange(0, 2 * pi + 0.1, 0.1) #todos os angulos
+    a = math.sqrt(eigval[max])
+    b = math.sqrt(eigval[min])
+    x = [a * math.cos(ua) for ua in ta]
+    y = [b * math.sin(ua) for ua in ta]
+    angle = math.atan2(eigvec[1, max], eigvec[0, max]) # angulo de rotaçao calculado com o valor proprio maior
 
     #matriz de rotação
-    cos_angle = np.cos(angle)
-    sin_angle = np.sin(angle)
-    R = np.array(
+    Rot = np.array(
         [
-            [cos_angle, -sin_angle],
-            [sin_angle, cos_angle]
+            [np.cos(angle), -np.sin(angle)],
+            [np.sin(angle), np.cos(angle)]
         ])
 
-    fx = R @ (np.array([x, y]))
+    fx = Rot @ (np.array([x, y]))
     px = np.array(fx[0, :] + xEst[0, 0]).flatten()
     py = np.array(fx[1, :] + xEst[1, 0]).flatten()
     plt.plot(px, py, "--r")
@@ -580,7 +578,6 @@ def plot_function(xTrue_plot, xDR_plot, xEst_plot):
     plt.axis("equal")
     plt.grid(True)
     plt.axis('equal')
-    plt.show()
 
 
 if __name__ == '__main__':
@@ -595,9 +592,9 @@ if __name__ == '__main__':
     xTrue[1] = -4
     xTrue[2] = pi/2
 
-    xDR = xTrue
+    # xDR = xTrue
     xDR = np.zeros((3,1))
-    xDR[0] = -1
+    xDR[0] = -2
     xDR[1] = -4
     xDR[2] = pi/2
 
@@ -713,6 +710,7 @@ if __name__ == '__main__':
         print(time)
 
     #plot_function(xTrue_plot, xDR_plot, xEst_plot)
+    plt.show()
     # dif2 = xTrue_plot-xDR_plot
     dif1 = xTrue_plot - xEst_plot
 
