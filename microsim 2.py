@@ -366,13 +366,15 @@ def extractlines(theta, rho, thersholds):
     # for l in range(0, n):
     #    print(np.concatenate([np.transpose(xy[:, pointsidx[l, 0]]), np.transpose(xy[:, pointsidx[l, 1]])], axis = 1))
     pointsidx = np.asmatrix(pointsidx)
-    for l in range(0, n):
-        segmends[l, :] = np.concatenate([np.transpose(xy[:, pointsidx[l, 0]]), np.transpose(xy[:, pointsidx[l, 1]])],
-                                        axis=1)
-        # segmends[l, :] = [np.transpose(xy[:, pointsidx[l, 0]]), np.transpose(xy[:, pointsidx[l, 1]])]
-        # for j in range(0:4):
-        #    segmends[l, j] = [xy[j, pointsidx[l, 0]]]
-        segmlen[l] = math.sqrt((segmends[l, 0] - segmends[l, 2]) ** 2 + (segmends[l, 1] - segmends[l, 3]) ** 2)
+
+    if pointsidx.shape[0] != 0:
+        for l in range(0, n):
+            segmends[l, :] = np.concatenate([np.transpose(xy[:, pointsidx[l, 0]]), np.transpose(xy[:, pointsidx[l, 1]])],
+                                            axis=1)
+            # segmends[l, :] = [np.transpose(xy[:, pointsidx[l, 0]]), np.transpose(xy[:, pointsidx[l, 1]])]
+            # for j in range(0:4):
+            #    segmends[l, j] = [xy[j, pointsidx[l, 0]]]
+            segmlen[l] = math.sqrt((segmends[l, 0] - segmends[l, 2]) ** 2 + (segmends[l, 1] - segmends[l, 3]) ** 2)
 
     segmlen = np.transpose(segmlen)
     # print(((pointsidx[:,1] - pointsidx[:,0]) >= thersholds.min_point_seg))
