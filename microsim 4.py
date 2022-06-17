@@ -546,8 +546,8 @@ def plot_covariance_ellipse(xEst, PEst):
     ta = np.arange(0, 2 * pi + 0.1, 0.1) #todos os angulos
     a = math.sqrt(eigval[max])
     b = math.sqrt(eigval[min])
-    x = [a * math.cos(ua) for ua in ta]
-    y = [b * math.sin(ua) for ua in ta]
+    ex = [a * math.cos(ua) for ua in ta]
+    ey = [b * math.sin(ua) for ua in ta]
     angle = math.atan2(eigvec[1, max], eigvec[0, max]) # angulo de rotaçao calculado com o valor proprio maior
 
     #matriz de rotação
@@ -557,9 +557,9 @@ def plot_covariance_ellipse(xEst, PEst):
             [np.sin(angle), np.cos(angle)]
         ])
 
-    fx = Rot @ (np.array([x, y]))
-    px = np.array(fx[0, :] + xEst[0, 0]).flatten()
-    py = np.array(fx[1, :] + xEst[1, 0]).flatten()
+    pe = Rot @ (np.array([ex, ey])) # pontos elipse apos rotaçao rotaçao da elipsoide
+    px = np.array(pe[0, :] + xEst[0, 0]).flatten() # centrar 
+    py = np.array(pe[1, :] + xEst[1, 0]).flatten() # centrar
     plt.plot(px, py, "--r")
 
 
