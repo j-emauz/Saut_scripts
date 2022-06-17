@@ -661,7 +661,6 @@ if __name__ == '__main__':
         x_pred_plot = np.hstack((x_pred_plot, x_pred))
         x_real_plot = np.hstack((x_real_plot, x_real))
 
-
         # simulaçao
 
         plt.gcf().canvas.mpl_connect('key_release_event',
@@ -674,8 +673,6 @@ if __name__ == '__main__':
                  x_pred_plot[1, :].flatten(), "-k")
         plt.plot(x_est_plot[0, :].flatten(),
                  x_est_plot[1, :].flatten(), "-r")
-                 
-
 
         """
         for mo in range(0, seg_i_f.shape[0]):
