@@ -75,14 +75,14 @@ X9 = [P91[0], P92[0]]
 Y9 = [P91[1], P92[1]]
 
 
-INPUT_NOISE = np.diag([0.1, np.deg2rad(0.5)]) ** 2
+INPUT_NOISE = np.diag([0.1, np.deg2rad(2.0)]) ** 2
 SIM_TIME = 62.8
 DT = 0.2
 
-R = np.diag([
+REst = np.diag([
     0.1,  # variance of location on x-axis
     0.1,  # variance of location on y-axis
-    np.deg2rad(0.5),  # variance of theta
+    np.deg2rad(2.0),  # variance of theta
 ]) ** 2  # predict state covariance
 
 
@@ -112,7 +112,7 @@ def ekf_estimation(xEst, Eest, u):
                   [u[0, 0] * math.sin(xEst[2, 0] + u[1, 0])],
                   [u[1, 0]]])
 
-    Eest = G_x @ Eest @ G_x.T + R
+    Eest = G_x @ Eest @ G_x.T + REst
     xEst = xEst + b
 
     return xEst, Eest
@@ -804,5 +804,28 @@ if __name__ == '__main__':
         plt.pause(0.001)
         # print(time)
         """
+        print(time)
 
     plot_function(xTrue_plot, xDR_plot, xEst_plot)
+    # dif2 = xTrue_plot-xDR_plot
+    dif1 = xTrue_plot - xEst_plot
+
+    max1x = np.amax(dif1[0, :])
+    min1x = np.amin(dif1[0, :])
+    
+    max1y = np.amax(dif1[1, :])
+    min1y = np.amin(dif1[1, :])
+    
+    max1t = np.amax(dif1[2, :])
+    min1t = np.amin(dif1[2, :])
+    
+    
+    print('max1x = ', max1x)
+    print('min1x = ', min1x)
+    
+    print('max1y = ', max1y)  
+    print('min1y = ', min1y)
+    
+    print('max1t = ', max1t)
+    print('min1t = ', min1t)
+    
