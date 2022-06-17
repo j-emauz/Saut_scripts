@@ -592,6 +592,8 @@ def step_update(x_pred, E_pred,  Z, R_seg, mapa, g):
         x_up = x_pred
         E_up = E_pred
 
+        return  x_up, E_up
+
     v, H, R_seg = matching(x_pred, E_pred, Z, R_seg, mapa, g)
 
 
