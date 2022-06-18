@@ -377,7 +377,10 @@ def split_merge(theta, rho, thersholds):
 
     for c in range(0,alpha.shape[0]):
         for j in range(0,2):
-            R_seg[j,j,c] = 0.5
+            if j == 0:
+                R_seg[j,j,c] = 0.2 ** 2
+            if j == 1:
+                R_seg[j,j,c] = np.deg2rad(6) ** 2
 
     return z, R_seg, seg_i_f
 
@@ -637,8 +640,8 @@ if __name__ == '__main__':
         """
         plot_covariance_ellipse(x_est, E_est)
 
-        # plt.axis("equal")
-        plt.axis([-3.5, 3.5, -3.5, 3.5])
+        plt.axis("equal")
+        #plt.axis([-3.5, 3.5, -3.5, 3.5])
         plt.grid(True)
         plt.pause(0.001)
         # print(time)

@@ -103,14 +103,16 @@ def main(argv):
 
 
     linha = linesP[cenas,:,:]
+
+    #Mudança de referencial da imagem para o referencial do mapa:
     for i in range(0, len(cenas)):
         linha[i, 0, 1]= -linha[i, 0, 1] + (640 - 456)
         linha[i, 0, 0]= linha[i, 0, 0] - 424
         linha[i, 0, 3] = -linha[i, 0, 3] + (640 - 456)
         linha[i, 0, 2] = linha[i, 0, 2] - 424
 
-    #print(linha)
 
+    #Obtenção da matriz de linhas do mapa em coordenadas polares:
     linha_polar=np.zeros((2,len(cenas)))
 
     for i in range(0, len(cenas)):
@@ -126,19 +128,6 @@ def main(argv):
         alpha = math.atan2(num, den) / 2
 
         r = x_c * math.cos(alpha) + y_c * math.sin(alpha)
-
-
-
-#    for i in range(0, len(cenas)):
-#        theta_0=math.pi/2
-#        if linha[i, 0, 0] != linha[i, 0, 2]:
-#            theta_0 = math.atan2((linha[i, 0, 3]-linha[i, 0, 1]), (linha[i, 0, 2]-linha[i, 0, 0]))
-#        theta1= math.atan2(linha[i, 0, 1],linha[i, 0, 0])
-#        r1= linha[i, 0, 0]/(math.cos(theta1))
-#
-#        r= r1*math.sin(theta1-theta_0)
-#        alpha=math.pi/2 - theta_0
-#        alpha = math.pi - alpha
 
         if r < 0:
             alpha = alpha + math.pi
