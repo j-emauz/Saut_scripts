@@ -12,7 +12,7 @@ from pylab import *
 lidar = np.linspace(-5, 5, 640)
 def main(argv):
 
-    default_file = 'monkeysmol2.pgm'
+    default_file = 'mapa_final.pgm'
     filename = argv[0] if len(argv) > 0 else default_file
     # Loads an image
     src = cv.imread(cv.samples.findFile(filename), cv.IMREAD_GRAYSCALE)

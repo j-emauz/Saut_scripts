@@ -529,8 +529,8 @@ def update(x_est, E_est, z, R_seg, mapa, g):
     return x_up, E_up
 
 
-def plot_covariance_ellipse(x_est, P_est, subplot): #MUDAR PARA E
-    Pxy = P_est[0:2, 0:2]
+def plot_covariance_ellipse(x_est, E_est, subplot): #MUDAR PARA E
+    Pxy = E_est[0:2, 0:2]
     eigval, eigvec = np.linalg.eig(Pxy)
 
     if eigval[0] >= eigval[1]:
