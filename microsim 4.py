@@ -77,18 +77,18 @@ Q_est = np.diag([
 ]) ** 2  
 
 
-def plot_map():
-    plt.plot(X1, Y1, '-k')
+def plot_map(subplot):
+    subplot.plot(X1, Y1, '-k')
 
-    plt.plot(X2, Y2, '-k')
-    plt.plot(X3, Y3, '-k')
-    plt.plot(X4, Y4, '-k')
+    subplot.plot(X2, Y2, '-k')
+    subplot.plot(X3, Y3, '-k')
+    subplot.plot(X4, Y4, '-k')
 
-    plt.plot(X5, Y5, '-k')
-    plt.plot(X6, Y6, '-k')
-    plt.plot(X7, Y7, '-k')
-    plt.plot(X8, Y8, '-k')
-    plt.plot(X9, Y9, '-k')
+    subplot.plot(X5, Y5, '-k')
+    subplot.plot(X6, Y6, '-k')
+    subplot.plot(X7, Y7, '-k')
+    subplot.plot(X8, Y8, '-k')
+    subplot.plot(X9, Y9, '-k')
 
 
 def predict(x_est, E_est, u):
@@ -529,7 +529,7 @@ def update(x_est, E_est, z, R_seg, mapa, g):
     return x_up, E_up
 
 
-def plot_covariance_ellipse(x_est, P_est):
+def plot_covariance_ellipse(x_est, P_est, subplot): #MUDAR PARA E
     Pxy = P_est[0:2, 0:2]
     eigval, eigvec = np.linalg.eig(Pxy)
 
@@ -557,7 +557,7 @@ def plot_covariance_ellipse(x_est, P_est):
     pe = Rot @ (np.array([ex, ey])) # pontos elipse apos rotaçao rotaçao da elipsoide
     px = np.array(pe[0, :] + x_est[0, 0]).flatten() # centrar 
     py = np.array(pe[1, :] + x_est[1, 0]).flatten() # centrar
-    plt.plot(px, py, "--g")
+    subplot.plot(px, py, "--g")
 
 
 def plots_x(x_real_plot, x_pred_plot, x_est_plot):
@@ -615,8 +615,10 @@ if __name__ == '__main__':
     #Mapa corredor com parte do elevador
     mapa = np.array([[-pi/2, -pi/2, pi, pi/2, pi/2, pi/2, pi/2, pi/2], [5, 3, 2, 0, 5, 8, 12, 14]])
 
+    fig1, ax = plt.subplots(1, 2)
     while time <= SIM_TIME:
-        plt.cla()
+        ax[1].cla()
+        ax[0].cla()
         t_traj += 1
         if t_traj == 30:
             omega = -omega
@@ -634,7 +636,9 @@ if __name__ == '__main__':
             scan_point, rang, rang_error = laser_model(x_real, tl)
 
             if scan_point != (float('inf'), float('inf')):
-                plt.scatter(scan_point[0] + rang_error * math.cos(tl), scan_point[1] + rang_error * math.sin(tl), 5,
+                ax[0].scatter(scan_point[0] + rang_error * math.cos(tl), scan_point[1] + rang_error * math.sin(tl), 5,
+                            '#e10600', ",", zorder=100)
+                ax[1].scatter(scan_point[0] + rang_error * math.cos(tl), scan_point[1] + rang_error * math.sin(tl), 5,
                             '#e10600', ",", zorder=100)
             scan_m[0, j] = rang
             scan_m[1, j] = tl
@@ -668,13 +672,21 @@ if __name__ == '__main__':
 
         plt.gcf().canvas.mpl_connect('key_release_event',
                                      lambda event: [exit(0) if event.key == 'escape' else None])
-        plot_map()
+        plot_map(ax[0])
+        plot_map(ax[1])
 
-        plt.plot(x_real_plot[0, :].flatten(),
+        ax[0].plot(x_real_plot[0, :].flatten(),
                  x_real_plot[1, :].flatten(), "-b")
-        plt.plot(x_pred_plot[0, :].flatten(),
+        ax[0].plot(x_pred_plot[0, :].flatten(),
                  x_pred_plot[1, :].flatten(), "-k")
-        plt.plot(x_est_plot[0, :].flatten(),
+        ax[0].plot(x_est_plot[0, :].flatten(),
+                 x_est_plot[1, :].flatten(), "-r")
+
+        ax[1].plot(x_real_plot[0, :].flatten(),
+                 x_real_plot[1, :].flatten(), "-b")
+        ax[1].plot(x_pred_plot[0, :].flatten(),
+                 x_pred_plot[1, :].flatten(), "-k")
+        ax[1].plot(x_est_plot[0, :].flatten(),
                  x_est_plot[1, :].flatten(), "-r")
 
         """
@@ -687,10 +699,12 @@ if __name__ == '__main__':
             plt.axis([-3.5, 3.5, -3.5, 3.5])
             plt.plot(x_values, y_values, '#03adfc')
         """
-        plot_covariance_ellipse(x_est, E_est)
+        plot_covariance_ellipse(x_est, E_est, ax[0])
+        plot_covariance_ellipse(x_est, E_est, ax[1])
 
 
-        plt.axis([x_est[0] - 1, x_est[0] + 1, x_est[1] - 1, x_est[1] + 1])
+        ax[1].axis([x_est[0] - 1, x_est[0] + 1, x_est[1] - 1, x_est[1] + 1])
+        ax[0].axis('equal')
         plt.grid(True)
         plt.pause(0.001)
         # print(time)
