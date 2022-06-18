@@ -80,7 +80,7 @@ def main(argv):
 
     linha = linesP[cenas,:,:]
 
-    #Mudança de referêncial da imagem para o referêncial do mapa:
+    #Mudança de referencial da imagem para o referencial do mapa:
     for i in range(0, len(cenas)):
         linha[i, 0, 1]= -linha[i, 0, 1] + (640 - 456)
         linha[i, 0, 0]= linha[i, 0, 0] - 424
