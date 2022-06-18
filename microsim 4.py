@@ -469,7 +469,7 @@ def matching(x, P, z, R_seg, M, g):
             z_predict, H[:, :, aux_nmap + (aux_nme) * n_map] = update_mat(x, M[:, aux_nmap])
             v[:, aux_nmap + (aux_nme) * n_map] = z[:, aux_nme] - z_predict
             W = H[:, :, aux_nmap + (aux_nme) * n_map] @ P @ np.transpose(H[:, :, aux_nmap + (aux_nme) * n_map]) + R_seg[:, :, aux_nme]
-            #Distancia Mahalanahobis
+            #Distancia Mahalanobis
             d[aux_nme, aux_nmap] = np.transpose(v[:, aux_nmap + (aux_nme) * n_map]) * np.linalg.inv(W) * v[:, aux_nmap + (aux_nme) * n_map]
 
 
@@ -557,7 +557,7 @@ def plot_covariance_ellipse(x_est, P_est):
     pe = Rot @ (np.array([ex, ey])) # pontos elipse apos rotaçao rotaçao da elipsoide
     px = np.array(pe[0, :] + x_est[0, 0]).flatten() # centrar 
     py = np.array(pe[1, :] + x_est[1, 0]).flatten() # centrar
-    plt.plot(px, py, "--r")
+    plt.plot(px, py, "--g")
 
 
 def plots_x(x_real_plot, x_pred_plot, x_est_plot):
@@ -690,14 +690,14 @@ if __name__ == '__main__':
         plot_covariance_ellipse(x_est, E_est)
 
 
-        plt.axis("equal")
+        plt.axis([x_est[0] - 1, x_est[0] + 1, x_est[1] - 1, x_est[1] + 1])
         plt.grid(True)
         plt.pause(0.001)
         # print(time)
 
 
 
-        print(time)
+        # print(time)
 
     #plots_x(x_real_plot, x_pred_plot, x_est_plot)
     
@@ -724,7 +724,7 @@ if __name__ == '__main__':
 
     plt.show()
 
-    """
+    
     dif1 = x_real_plot - x_est_plot
 
     max1x = np.amax(dif1[0, :])
@@ -745,5 +745,5 @@ if __name__ == '__main__':
     
     print('max1t = ', max1t)
     print('min1t = ', min1t)
-    """
+    
     
