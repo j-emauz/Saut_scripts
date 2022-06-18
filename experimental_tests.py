@@ -7,13 +7,19 @@ import matplotlib.pyplot as plt
 import numpy as np
 import cv2 as cv
 import scipy.linalg
-
+"""
+1ºteste:  tudo constante
+"""
+valor_medio_xr = np.array([])
+valor_medio_yr = np.array([])
+valor_medio_thetar = np.array([])
 
 """
-1ºteste: variar ruído, manter o resto constante
+2ºteste: variar ruído, manter o resto constante
 """
-#valores constantes: 
+#valores constantes:
 
+valor_ruido = np.array([])
 valor_medio_xr = np.array([])
 valor_medio_yr = np.array([])
 valor_medio_thetar = np.array([])
@@ -24,7 +30,7 @@ valor_medio_thetar = np.array([])
 
 
 """
-2ºteste: variar g
+3ºteste: variar g
 """
 
 valor_medio_xg = np.array([])
