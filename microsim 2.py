@@ -54,13 +54,13 @@ Q_est = np.diag([
 ]) ** 2  
 
 
-def plot_map():
-    plt.plot(X1, Y1, '-k')
-    plt.plot(X2, Y2, '-k')
-    plt.plot(X3, Y3, '-k')
-    plt.plot(X4, Y4, '-k')
-    plt.plot(X5, Y5, '-k')
-    # plt.show()
+def plot_map(subplot):
+    subplot.plot(X1, Y1, '-k')
+    subplot.plot(X2, Y2, '-k')
+    subplot.plot(X3, Y3, '-k')
+    subplot.plot(X4, Y4, '-k')
+    subplot.plot(X5, Y5, '-k')
+
 
 
 def predict(x_est, E_est, u):
@@ -490,7 +490,7 @@ def update(x_est, E_est, z, R_seg, mapa, g):
     return x_up, E_up
 
 
-def plot_covariance_ellipse(x_est, E_est):
+def plot_covariance_ellipse(x_est, E_est, subplot):
     Pxy = E_est[0:2, 0:2]
     eigval, eigvec = np.linalg.eig(Pxy)
 
@@ -518,7 +518,7 @@ def plot_covariance_ellipse(x_est, E_est):
     pe = Rot @ (np.array([ex, ey])) # pontos elipse apos rotaçao rotaçao da elipsoide
     px = np.array(pe[0, :] + x_est[0, 0]).flatten() # centrar 
     py = np.array(pe[1, :] + x_est[1, 0]).flatten() # centrar
-    plt.plot(px, py, "--r")
+    subplot.plot(px, py, "--g")
 
 
 def plots_x(x_real_plot, x_pred_plot, x_est_plot):
@@ -568,15 +568,20 @@ if __name__ == '__main__':
     #Mapa fixo (retangulo)
     mapa = np.array([[0, pi / 2, pi, -pi / 2, -pi / 4], [3, 3, 3, 3, 2.5*(math.sqrt(2))/2]])
 
+    fig1, ax = plt.subplots(1, 2)
     while time <= SIM_TIME:
         plt.cla()
+        ax[0].cla()
+        ax[1].cla()
 
         time += DT
         j = 0
         dist = np.zeros((i, 1))
         thetas = np.zeros((i, 1))
         x_real, x_pred, u_e = predict_motion(x_real, x_pred, u)
+        
         x_est, E_est = predict(x_est, E_est, u_e)
+        
         for tl in np.arange(-2.356194496154785, 2.0923497676849365, 0.05):
             scan_point, rang, rang_error = laser_model(x_real, tl)
             """
@@ -585,7 +590,7 @@ if __name__ == '__main__':
             scan_m[1,j] = scan_point[1] +  r_error*math.sin(tl)
             """
             if scan_point != (float('inf'), float('inf')):
-                plt.scatter(scan_point[0] + rang_error * math.cos(tl), scan_point[1] + rang_error * math.sin(tl), 5,
+                ax[0].scatter(scan_point[0] + rang_error * math.cos(tl), scan_point[1] + rang_error * math.sin(tl), 5,
                             '#e10600', ",", zorder=100)
             scan_m[0, j] = rang
             scan_m[1, j] = tl
@@ -605,7 +610,7 @@ if __name__ == '__main__':
         dist = np.transpose(np.asmatrix(dist))
         thetas = np.transpose(np.asmatrix(thetas))
 
-        z, R, segends = split_merge(thetas, dist, thresholds)
+        z, R, seg_i_f = split_merge(thetas, dist, thresholds)
 
         x_est, E_est = update(x_est, E_est, z, R, mapa, g)
 
@@ -619,28 +624,30 @@ if __name__ == '__main__':
 
         plt.gcf().canvas.mpl_connect('key_release_event',
                                      lambda event: [exit(0) if event.key == 'escape' else None])
-        plot_map()
+        plot_map(ax[0])
 
-        plt.plot(x_real_plot[0, :].flatten(),
+        ax[0].plot(x_real_plot[0, :].flatten(),
                  x_real_plot[1, :].flatten(), "-b")
-        plt.plot(x_pred_plot[0, :].flatten(),
+        ax[0].plot(x_pred_plot[0, :].flatten(),
                  x_pred_plot[1, :].flatten(), "-k")
-        plt.plot(x_est_plot[0, :].flatten(),
+        ax[0].plot(x_est_plot[0, :].flatten(),
                  x_est_plot[1, :].flatten(), "-r")
 
-        """
-        for monkey in range(0, segends.shape[0]):
-            segends = np.array(segends)
-            point1 = [segends[monkey, 0], segends[monkey, 1]]
-            point2 = [segends[monkey, 2], segends[monkey, 3]]
+        
+        for mo in range(0, seg_i_f.shape[0]):
+            seg_i_f = np.array(seg_i_f)
+            point1 = [seg_i_f[mo, 0], seg_i_f[mo, 1]]
+            point2 = [seg_i_f[mo, 2], seg_i_f[mo, 3]]
             x_values = [point1[0], point2[0]]
             y_values = [point1[1], point2[1]]
-            plt.axis([-3.5, 3.5, -3.5, 3.5])
-            plt.plot(x_values, y_values, '#03adfc')
-        """
-        plot_covariance_ellipse(x_est, E_est)
+            ax[1].axis([-3.5, 3.5, -3.5, 3.5])
+            ax[1].plot(x_values, y_values, '#03adfc')
+        
+        plot_covariance_ellipse(x_est, E_est, ax[0])
 
-        plt.axis("equal")
+        ax[0].axis('equal')
+        ax[1].axis('equal')
+        ax[1].axis([-4, 5, -4, 5])
         #plt.axis([-3.5, 3.5, -3.5, 3.5])
         plt.grid(True)
         plt.pause(0.001)
