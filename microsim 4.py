@@ -67,7 +67,7 @@ Y9 = [P91[1], P92[1]]
 
 
 INPUT_NOISE = np.diag([0.1, np.deg2rad(2.0)]) ** 2
-SIM_TIME = 62.8
+SIM_TIME = 180
 DT = 0.2
 
 Q_est = np.diag([
@@ -615,7 +615,7 @@ if __name__ == '__main__':
     #Mapa corredor com parte do elevador
     mapa = np.array([[-pi/2, -pi/2, pi, pi/2, pi/2, pi/2, pi/2, pi/2], [5, 3, 2, 0, 5, 8, 12, 14]])
 
-    while time <= 180:
+    while time <= SIM_TIME:
         plt.cla()
         t_traj += 1
         if t_traj == 30:
@@ -700,8 +700,31 @@ if __name__ == '__main__':
         print(time)
 
     #plots_x(x_real_plot, x_pred_plot, x_est_plot)
-    plt.show()
+    
     # dif2 = x_real_plot-x_pred_plot
+
+    #root mean square
+    MSEx = np.square(np.subtract(x_real_plot[0, :], x_est_plot[0, :])).mean() 
+ 
+    RMSEx = math.sqrt(MSEx)
+    print('RMSE x = ', end = '')
+    print(RMSEx)
+
+    MSEy = np.square(np.subtract(x_real_plot[1, :], x_est_plot[1, :])).mean() 
+ 
+    RMSEy = math.sqrt(MSEy)
+    print('RMSE y = ', end = '')
+    print(RMSEy)
+
+    MSEt = np.square(np.subtract(x_real_plot[2, :], x_est_plot[2, :])).mean() 
+ 
+    RMSEt = math.sqrt(MSEt)
+    print('RMSE theta = ', end = '')
+    print(RMSEt)
+
+    plt.show()
+
+    """
     dif1 = x_real_plot - x_est_plot
 
     max1x = np.amax(dif1[0, :])
@@ -722,4 +745,5 @@ if __name__ == '__main__':
     
     print('max1t = ', max1t)
     print('min1t = ', min1t)
+    """
     

@@ -640,8 +640,8 @@ if __name__ == '__main__':
         """
         plot_covariance_ellipse(x_est, E_est)
 
-        # plt.axis("equal")
-        plt.axis([-3.5, 3.5, -3.5, 3.5])
+        plt.axis("equal")
+        #plt.axis([-3.5, 3.5, -3.5, 3.5])
         plt.grid(True)
         plt.pause(0.001)
         # print(time)
