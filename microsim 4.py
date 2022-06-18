@@ -736,7 +736,7 @@ if __name__ == '__main__':
     print('RMSE theta = ', end = '')
     print(RMSEt)
 
-    plt.show()
+
 
     
     dif1 = x_real_plot - x_est_plot
@@ -760,4 +760,5 @@ if __name__ == '__main__':
     print('max1t = ', max1t)
     print('min1t = ', min1t)
     
+    plt.show()
     
