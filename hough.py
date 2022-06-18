@@ -6,6 +6,8 @@ import sys
 import math
 import cv2 as cv
 import numpy as np
+import matplotlib.pyplot as plt
+from pylab import *
 
 lidar = np.linspace(-5, 5, 640)
 def main(argv):
@@ -28,8 +30,13 @@ def main(argv):
     cdst = cv.cvtColor(src, cv.COLOR_GRAY2BGR)
     cdstP = np.copy(cdst)
 
-    lines = cv.HoughLines(dst, 1, np.pi / 180, 40, None, 0, 0)
+    lines = cv.HoughLines(dst, 1, np.pi / 180, 50, None, 0, 0)
 
+    figure = plt.figure(figsize=(12, 12))
+    subplot = figure.add_subplot(1, 1, 1)
+    subplot.set_facecolor((0, 0, 0))
+
+    rho_graph1, rho_graph2 = np.zeros(100), np.zeros(100)
     if lines is not None:
         for i in range(0, len(lines)):
             rho = lines[i][0][0]
@@ -41,6 +48,23 @@ def main(argv):
             pt1 = (int(x0 + 1000*(-b)), int(y0 + 1000*(a)))
             pt2 = (int(x0 - 1000*(-b)), int(y0 - 1000*(a)))
             cv.line(cdst, pt1, pt2, (0,0,255), 3, cv.LINE_AA)
+
+            theta_graph = np.linspace(-pi, pi, 100)
+
+            #for j in range(0, 100):
+            #    rho_graph1[j] = pt1[0]*np.cos(theta_graph[j]) + pt1[1]*np.sin(theta_graph[j])
+            #    rho_graph2[j] = pt2[0]*np.cos(theta_graph[j]) + pt2[1]*np.sin(theta_graph[j])
+
+            rho_graph1 = pt1[0]*np.cos(theta_graph) + pt1[1]*np.sin(theta_graph)
+            rho_graph2 = pt2[0]*np.cos(theta_graph) + pt2[1]*np.sin(theta_graph)
+
+            subplot.plot(theta_graph, rho_graph1, color="orange", alpha=0.05)
+            subplot.plot(theta_graph, rho_graph2, color="orange", alpha=0.05)
+            #subplot.plot([theta], [rho], marker='o', color="yellow")
+
+    #subplot.invert_yaxis()
+    #subplot.invert_xaxis()
+    plt.show()
 
     #Parâmetros a mudar:
     #(ver: https://docs.opencv.org/3.4/d9/db0/tutorial_hough_lines.html)
@@ -92,18 +116,18 @@ def main(argv):
     linha_polar=np.zeros((2,len(cenas)))
 
     for i in range(0, len(cenas)):
-        xc = (linha[i, 0, 0] + linha[i, 0, 2])/2
-        yc = (linha[i, 0, 1] + linha[i, 0, 3]) / 2
+        x_c = (linha[i, 0, 0] + linha[i, 0, 2])/2
+        y_c = (linha[i, 0, 1] + linha[i, 0, 3]) / 2
         lx = [0, 2]
         ly = [1, 3]
-        dx = np.asmatrix(linha[i, 0, lx] - xc)
-        dy = np.asmatrix(linha[i, 0, ly] - yc)
+        dx = np.asmatrix(linha[i, 0, lx] - x_c)
+        dy = np.asmatrix(linha[i, 0, ly] - y_c)
 
         num = -2 * np.matrix.sum(np.multiply(dx, dy))
-        denom = np.matrix.sum(np.multiply(dy, dy) - np.multiply(dx, dx))
-        alpha = math.atan2(num, denom) / 2
+        den = np.matrix.sum(np.multiply(dy, dy) - np.multiply(dx, dx))
+        alpha = math.atan2(num, den) / 2
 
-        r = xc * math.cos(alpha) + yc * math.sin(alpha)
+        r = x_c * math.cos(alpha) + y_c * math.sin(alpha)
 
         if r < 0:
             alpha = alpha + math.pi
