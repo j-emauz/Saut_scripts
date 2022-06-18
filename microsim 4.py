@@ -743,22 +743,25 @@ if __name__ == '__main__':
 
     max1x = np.amax(dif1[0, :])
     min1x = np.amin(dif1[0, :])
+    if max1x < abs(min1x):
+        max1x = abs(min1x)
     
     max1y = np.amax(dif1[1, :])
     min1y = np.amin(dif1[1, :])
+    if max1y < abs(min1y):
+        max1y = abs(min1y)
     
     max1t = np.amax(dif1[2, :])
     min1t = np.amin(dif1[2, :])
+    if max1t < abs(min1t):
+        max1t = abs(min1t)
     
     
     print('max1x = ', max1x)
-    print('min1x = ', min1x)
     
     print('max1y = ', max1y)  
-    print('min1y = ', min1y)
     
     print('max1t = ', max1t)
-    print('min1t = ', min1t)
-    
+
     plt.show()
     
