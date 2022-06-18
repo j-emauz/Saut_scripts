@@ -74,19 +74,21 @@ def main(argv):
 
     cv.imshow("Source", src)
     #cv.imshow("Source", dst)
-    #cv.imshow("Detected Lines (in red) - Standard Hough Line Transform", cdst)
+    cv.imshow("Detected Lines (in red) - Standard Hough Line Transform", cdst)
     cv.imshow("Detected Lines (in red) - Probabilistic Line Transform", cdstP)
 
 
     linha = linesP[cenas,:,:]
+
+    #Mudança de referêncial da imagem para o referêncial do mapa:
     for i in range(0, len(cenas)):
         linha[i, 0, 1]= -linha[i, 0, 1] + (640 - 456)
         linha[i, 0, 0]= linha[i, 0, 0] - 424
         linha[i, 0, 3] = -linha[i, 0, 3] + (640 - 456)
         linha[i, 0, 2] = linha[i, 0, 2] - 424
 
-    #print(linha)
 
+    #Obtenção da matriz de linhas do mapa em coordenadas polares:
     linha_polar=np.zeros((2,len(cenas)))
 
     for i in range(0, len(cenas)):
@@ -102,19 +104,6 @@ def main(argv):
         alpha = math.atan2(num, denom) / 2
 
         r = xc * math.cos(alpha) + yc * math.sin(alpha)
-
-
-
-#    for i in range(0, len(cenas)):
-#        theta_0=math.pi/2
-#        if linha[i, 0, 0] != linha[i, 0, 2]:
-#            theta_0 = math.atan2((linha[i, 0, 3]-linha[i, 0, 1]), (linha[i, 0, 2]-linha[i, 0, 0]))
-#        theta1= math.atan2(linha[i, 0, 1],linha[i, 0, 0])
-#        r1= linha[i, 0, 0]/(math.cos(theta1))
-#
-#        r= r1*math.sin(theta1-theta_0)
-#        alpha=math.pi/2 - theta_0
-#        alpha = math.pi - alpha
 
         if r < 0:
             alpha = alpha + math.pi
