@@ -529,7 +529,7 @@ def update(x_est, E_est, z, R_seg, mapa, g):
     return x_up, E_up
 
 
-def plot_covariance_ellipse(x_est, E_est, subplot): #MUDAR PARA E
+def plot_covariance_ellipse(x_est, E_est, subplot):
     Pxy = E_est[0:2, 0:2]
     eigval, eigvec = np.linalg.eig(Pxy)
 
@@ -632,6 +632,7 @@ if __name__ == '__main__':
         x_real, x_pred, u_e = predict_motion(x_real, x_pred, u)
 
         x_est, E_est = predict(x_est, E_est, u_e)
+
         for tl in np.arange(-2.356194496154785, 2.0923497676849365, 0.05):
             scan_point, rang, rang_error = laser_model(x_real, tl)
 
