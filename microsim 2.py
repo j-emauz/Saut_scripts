@@ -413,10 +413,10 @@ def update_mat(x, m):
     return h, Hxmat
 
 
-def matching(x, P, z, R_seg, M, g):
+def matching(x, E, z, R_seg, mapa, g):
     #z: Linhas observadas
     n_measurs = z.shape[1]
-    n_map = M.shape[1]
+    n_map = mapa.shape[1]
 
     d = np.zeros((n_measurs, n_map))
     v = np.zeros((2, n_measurs * n_map))
@@ -427,9 +427,9 @@ def matching(x, P, z, R_seg, M, g):
 
     for aux_nme in range(0, n_measurs):
         for aux_nmap in range(0, n_map):
-            z_predict, H[:, :, aux_nmap + (aux_nme) * n_map] = update_mat(x, M[:, aux_nmap])
+            z_predict, H[:, :, aux_nmap + (aux_nme) * n_map] = update_mat(x, mapa[:, aux_nmap])
             v[:, aux_nmap + (aux_nme) * n_map] = z[:, aux_nme] - z_predict
-            W = H[:, :, aux_nmap + (aux_nme) * n_map] @ P @ np.transpose(H[:, :, aux_nmap + (aux_nme) * n_map]) + R_seg[:, :, aux_nme]
+            W = H[:, :, aux_nmap + (aux_nme) * n_map] @ E @ np.transpose(H[:, :, aux_nmap + (aux_nme) * n_map]) + R_seg[:, :, aux_nme]
             #Distancia Mahalanahobis
             d[aux_nme, aux_nmap] = np.transpose(v[:, aux_nmap + (aux_nme) * n_map]) * np.linalg.inv(W) * v[:, aux_nmap + (aux_nme) * n_map]
 
