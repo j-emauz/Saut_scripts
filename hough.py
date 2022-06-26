@@ -85,7 +85,7 @@ def main(argv):
         elif alpha < -math.pi:
             alpha = alpha + 2 * math.pi
 
-        linha_polar[1, i] = r * 0.05  #in meters
+        linha_polar[1, i] = r * 0.05  #em metros; NOTA: 0.05 é a resolução do mapa
         linha_polar[0, i] = alpha
 
     print(linha_polar)
