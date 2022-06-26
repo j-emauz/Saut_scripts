@@ -457,7 +457,7 @@ def matching(x, E, z, R_seg, mapa, g):
     v = np.asmatrix(v)
 
 
-    for aux_nme in range(0, n_measurs): #calcula diferença para todas as variaçoes
+    for aux_nme in range(0, n_measurs): #calcula diferença para todas as combinacoes
         for aux_nmap in range(0, n_map):
             z_predict, H[:, :, aux_nmap + (aux_nme) * n_map] = update_mat(x, mapa[:, aux_nmap])
             v[:, aux_nmap + (aux_nme) * n_map] = z[:, aux_nme] - z_predict # inovaçao
