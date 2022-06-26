@@ -52,8 +52,8 @@ def main(argv):
 
     #Mudança de referencial da imagem para o referencial do mapa:
     for i in range(0, len(line_idx)):
-        linha[i, 0, 1]= -linha[i, 0, 1] + (640 - 456)
-        linha[i, 0, 0]= linha[i, 0, 0] - 424
+        linha[i, 0, 1] = -linha[i, 0, 1] + (640 - 456)
+        linha[i, 0, 0] = linha[i, 0, 0] - 424
         linha[i, 0, 3] = -linha[i, 0, 3] + (640 - 456)
         linha[i, 0, 2] = linha[i, 0, 2] - 424
 
