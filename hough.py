@@ -7,7 +7,7 @@ import sys
 import math
 import cv2 as cv
 import numpy as np
-
+import matplotlib.pyplot as plt
 
 def main(argv):
 
@@ -27,6 +27,10 @@ def main(argv):
 
     cdst = cv.cvtColor(src, cv.COLOR_GRAY2BGR)
     cdstP = np.copy(cdst)
+
+    figure = plt.figure(figsize=(12, 12))
+    subplot = figure.add_subplot(1, 1, 1)
+    subplot.set_facecolor((0, 0, 0))
 
 
     #Parâmetros a mudar:
